@@ -15,4 +15,4 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
-*(none yet — implementation has not started)*
+- [Phase A — Security Design](phase-a-security-design__worklog_2026-07-23.md) — 2026-07-23 — all seven design docs + ADR-001…005 written; O1/O2/O5/O6/O7 resolved, O3/O4 deferred to Phase C.

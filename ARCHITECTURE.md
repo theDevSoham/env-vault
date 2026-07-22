@@ -186,16 +186,18 @@ Order is mandated by handoff §35. Concrete task breakdowns live in [plannings/]
 | D4 | Vault-level roles only (Owner/Member) | V1 scope | Handoff §6 |
 | D5 | No secret-reveal UI; export-only retrieval | Product security posture | Handoff §7 |
 | D6 | Revocation = key rotation, future-only guarantee | Cryptographic reality, documented honestly | Handoff §20–21 |
+| D7 | Crypto library: libsodium-wrappers + WebCrypto AES-GCM hybrid (was O1) | Argon2id/X25519/secretstream from libsodium; native AES-GCM for records | [ADR-001](docs/decisions/adr-001-crypto-library.md) |
+| D8 | Auth: first-party email+password, derived-auth-key pattern (was O2) | One password → domain-separated authKey + KEK; no third-party auth code | [ADR-002](docs/decisions/adr-002-auth-strategy.md) |
+| D9 | Argon2id policy v1: 64 MiB, ops=3, salt 16 B, out 32 B (was O5) | Above OWASP floor, browser-viable; per-user stored, upgradable | [ADR-003](docs/decisions/adr-003-argon2id-params.md) |
+| D10 | Vault/environment/file names encrypted under vault key (was O6) | User content reveals infrastructure; ids/timestamps/roles stay plaintext | [ADR-004](docs/decisions/adr-004-metadata-sensitivity.md) |
+| D11 | Pending invites via deferred wrap by owner's client (was O7) | No escrow, no key-in-link; access waits for owner's next unlocked session | [ADR-005](docs/decisions/adr-005-pending-invitations.md) |
+| D12 | CLI provisioning approach: device-auth + device-keypair wrap (was O8) | Sketch fixed now so Phases A–E don't preclude it; full design gated pre-1.5 | [docs/cli-key-provisioning.md](docs/cli-key-provisioning.md) |
 
-## 10. Open Decisions (must be resolved in Phase A — do not pick silently)
+## 10. Open Decisions (do not pick silently)
 
-| # | Question | Options / notes |
+| # | Question | Status / notes |
 |---|---|---|
-| O1 | Crypto library | libsodium-wrappers (has Argon2id + X25519 sealed boxes) vs WebCrypto + argon2 WASM. WebCrypto lacks Argon2id and X25519-sealed-box out of the box. |
-| O2 | Authentication provider/strategy | Roll-own credentials + verifier (e.g. SRP/OPAQUE-style) vs Auth.js vs managed auth. Must keep auth secrets separate from encryption keys. |
-| O3 | Database + ORM | e.g. Postgres + Prisma/Drizzle. Needs atomic multi-row commits for key rotation. |
-| O4 | Object storage provider | S3-compatible; receives encrypted bytes only. |
-| O5 | Argon2id parameters | Memory/iterations/parallelism for browser targets; documented rationale required. |
-| O6 | Are vault/environment *names* sensitive? | Decide plaintext vs encrypted in Phase A threat model. |
-| O7 | Pending invitations to users without accounts | No server-side key escrow permitted; design deferred-wrap flow. |
-| O8 | CLI key provisioning | Separate secure design required before CLI work. |
+| O3 | Database + ORM | Deferred to Phase C (C1). Hard requirement: transactional multi-row commits for atomic key rotation. |
+| O4 | Object storage provider | Deferred to Phase C (C1). S3-compatible; receives encrypted bytes only. |
+
+Phase A design documents live in [docs/](docs/INDEX.md): threat model, crypto spec, account/key lifecycle, sharing protocol, revocation protocol, revision model, CLI provisioning sketch.
