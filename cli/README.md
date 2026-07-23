@@ -5,10 +5,10 @@ Zero-knowledge secrets CLI for [Env Vault](https://github.com/theDevSoham/env-va
 ## Install
 
 ```bash
-npm install -g envvault
+npm install -g @envvault-cli/cli
 ```
 
-Requires Node ≥ 20.
+This installs the `envvault` command. Requires Node ≥ 20.
 
 ## Authentication
 

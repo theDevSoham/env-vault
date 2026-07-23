@@ -1,5 +1,5 @@
 {
-  "name": "envvault",
+  "name": "@envvault-cli/cli",
   "version": "0.1.0",
   "description": "Zero-knowledge secrets CLI for Env Vault — pull .env secrets and inject them into processes, with client-side decryption.",
   "keywords": ["env", "secrets", "dotenv", "encryption", "zero-knowledge", "cli"],
