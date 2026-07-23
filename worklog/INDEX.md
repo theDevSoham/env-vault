@@ -15,6 +15,7 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
+- [SEO & Brand Assets](seo-assets__worklog_2026-07-23.md) — 2026-07-23 — favicon (SVG shield), generated OG + apple-touch images, full metadata, JSON-LD, robots + sitemap; all self-contained, browser-verified. `SITE_URL` placeholder to update at deploy.
 - [CLI Publish-Prep](cli-publish-prep__worklog_2026-07-23.md) — 2026-07-23 — made `envvault` an npm-publishable package (separate cli/package.json, esbuild bundle, root stays private); verified via clean-project install; not published.
 - [UI Restructure](ui-restructure__worklog_2026-07-23.md) — 2026-07-23 — full design-system overhaul (custom kit, zero new runtime deps, ADR-010); native dialogs replaced; browser-verified, no plaintext leak, no CSP violations; suite at 98.
 - [Phase 2 — Machine Access](phase-2-machine-access__worklog_2026-07-23.md) — 2026-07-23 — service accounts (CI credentials, one-time display), expiring memberships, CLI env-var mode + GH Actions doc; live CI-chain verified; suite at 98.
