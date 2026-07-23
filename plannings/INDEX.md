@@ -17,6 +17,7 @@ Statuses: `not-started` · `in-progress` · `blocked` · `done`
 | 08 | [Phase H — Security review](08-phase-h-security-review.md) | 04–07 | done |
 | 09 | [Phase 1.5 — CLI](09-phase-cli.md) | 08 | done |
 | 10 | [Phase 2 — Machine access & temporary membership](10-phase-2-machine-access.md) | 09 | done |
+| 11 | [UI restructure](11-ui-restructure.md) | 10 | done |
 
 ## Conventions
 

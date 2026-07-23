@@ -412,17 +412,18 @@ export async function previewInvitee(email: string): Promise<InvitePreview> {
 export async function invite(
   vaultId: string,
   email: string,
-  role: "owner" | "member"
+  role: "owner" | "member",
+  membershipTtlDays?: number
 ): Promise<{ flow: "A" | "B" }> {
   const preview = await previewInvitee(email);
   if (!preview.exists) {
-    await api.createInvitation(vaultId, { inviteeEmail: email, role }); // Flow B: deferred wrap
+    await api.createInvitation(vaultId, { inviteeEmail: email, role, membershipTtlDays }); // Flow B
     return { flow: "B" };
   }
   const detail = await api.vaultDetail(vaultId);
   const vaultKey = await unwrapForGeneration(detail, detail.vault.keyGeneration);
   const envelope = await wrapVaultKey(vaultKey, await b64.from(preview.publicKey!));
-  await api.createInvitation(vaultId, { inviteeEmail: email, role, envelope });
+  await api.createInvitation(vaultId, { inviteeEmail: email, role, envelope, membershipTtlDays });
   return { flow: "A" };
 }
 

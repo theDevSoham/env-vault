@@ -3,10 +3,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { resumeSession, unlock } from "../lib/client/flows";
+import { Logo } from "./Logo";
 import { useSession } from "./useSession";
+import { Button, Card, Field, Input, Spinner } from "./ui";
 
 /**
- * Wraps authenticated pages. Ensures a session exists (else → /login) and that
+ * Wraps authenticated pages: ensures a session exists (else → /login) and that
  * the private key is unlocked in memory (else password prompt — keys never
  * survive a reload by design, handoff §26).
  */
@@ -34,47 +36,47 @@ export function UnlockGate({ children }: { children: ReactNode }) {
   }, [session.userId, router]);
 
   if (!session.userId) {
-    return <p className="p-8 text-neutral-400">{resumeFailed ? "Redirecting…" : "Loading…"}</p>;
+    return (
+      <div className="flex min-h-screen items-center justify-center gap-2 text-sm text-muted">
+        <Spinner className="size-4" /> {resumeFailed ? "Redirecting…" : "Loading…"}
+      </div>
+    );
   }
   if (session.unlocked) return <>{children}</>;
 
   return (
-    <div className="mx-auto mt-24 w-full max-w-sm rounded-lg border border-neutral-800 p-6">
-      <h2 className="mb-1 text-lg font-semibold">Unlock your vaults</h2>
-      <p className="mb-4 text-sm text-neutral-400">
-        Keys live only in memory and were cleared. Enter your password to decrypt them again.
-      </p>
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setBusy(true);
-          setError("");
-          try {
-            await unlock(password);
-            setPassword("");
-          } catch {
-            setError("Wrong password.");
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="mb-3 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2"
-          placeholder="Password"
-          autoFocus
-        />
-        {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
-        <button
-          disabled={busy || password.length === 0}
-          className="w-full rounded bg-emerald-600 px-3 py-2 font-medium disabled:opacity-50"
+    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+      <div className="mb-8 flex justify-center"><Logo /></div>
+      <Card className="p-6">
+        <h1 className="text-lg font-semibold">Unlock your vaults</h1>
+        <p className="mb-5 mt-1 text-sm text-muted">
+          Keys live only in memory and were cleared on reload. Enter your password to decrypt them
+          again.
+        </p>
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setError("");
+            try {
+              await unlock(password);
+              setPassword("");
+            } catch {
+              setError("Wrong password.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+          className="flex flex-col gap-4"
         >
-          {busy ? "Deriving key…" : "Unlock"}
-        </button>
-      </form>
+          <Field label="Password" error={error}>
+            <Input type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••" />
+          </Field>
+          <Button type="submit" size="lg" loading={busy} disabled={password.length === 0} className="w-full">
+            {busy ? "Deriving key…" : "Unlock"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

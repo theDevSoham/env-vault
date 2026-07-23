@@ -3,8 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type FileDto } from "../lib/api/client";
 import { decryptFileName, downloadFile, uploadFile } from "../lib/client/flows";
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  useConfirm,
+  useToast,
+} from "./ui";
 
 export function FilesPanel({ vaultId, isOwner }: { vaultId: string; isOwner: boolean }) {
+  const toast = useToast();
+  const { confirm } = useConfirm();
   const [files, setFiles] = useState<(FileDto & { name: string })[]>([]);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -13,10 +25,7 @@ export function FilesPanel({ vaultId, isOwner }: { vaultId: string; isOwner: boo
     const { files: list } = await api.listFiles(vaultId);
     setFiles(
       await Promise.all(
-        list.map(async (file) => ({
-          ...file,
-          name: await decryptFileName(vaultId, file).catch(() => "(cannot decrypt)"),
-        }))
+        list.map(async (file) => ({ ...file, name: await decryptFileName(vaultId, file).catch(() => "(cannot decrypt)") }))
       )
     );
   }, [vaultId]);
@@ -25,78 +34,93 @@ export function FilesPanel({ vaultId, isOwner }: { vaultId: string; isOwner: boo
     void reload();
   }, [reload]);
 
+  function formatSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
   return (
-    <section className="rounded border border-neutral-800 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-semibold">Secret files</h2>
-        {isOwner && (
-          <>
-            <input
-              ref={inputRef}
-              type="file"
-              hidden
-              onChange={async (event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                setBusy(true);
-                try {
-                  await uploadFile(vaultId, file);
-                  await reload();
-                } finally {
-                  setBusy(false);
-                  event.target.value = "";
-                }
-              }}
-            />
-            <button
-              disabled={busy}
-              onClick={() => inputRef.current?.click()}
-              className="rounded bg-emerald-600 px-3 py-1 text-sm disabled:opacity-50"
-            >
-              {busy ? "Encrypting…" : "Upload (encrypted)"}
-            </button>
-          </>
-        )}
-      </div>
-      {files.length === 0 ? (
-        <p className="text-sm text-neutral-500">No files.</p>
-      ) : (
-        <ul className="flex flex-col gap-1 text-sm">
-          {files.map((file) => (
-            <li key={file.id} className="flex items-center justify-between py-1">
-              <span className="font-mono">{file.name}</span>
-              <span className="flex gap-2">
-                <button
-                  onClick={async () => {
-                    const { name, blob } = await downloadFile(vaultId, file);
-                    const url = URL.createObjectURL(blob);
-                    const anchor = document.createElement("a");
-                    anchor.href = url;
-                    anchor.download = name;
-                    anchor.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                  className="rounded border border-neutral-700 px-2 py-0.5 text-xs"
-                >
-                  Download
-                </button>
-                {isOwner && (
-                  <button
+    <Card>
+      <CardHeader
+        title="Secret files"
+        description="Certificates, service-account JSON, .pem — encrypted client-side."
+        action={
+          isOwner && (
+            <>
+              <input
+                ref={inputRef}
+                type="file"
+                hidden
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  setBusy(true);
+                  try {
+                    await uploadFile(vaultId, file);
+                    toast(`Uploaded ${file.name} (encrypted).`, "success");
+                    await reload();
+                  } finally {
+                    setBusy(false);
+                    event.target.value = "";
+                  }
+                }}
+              />
+              <Button size="sm" loading={busy} onClick={() => inputRef.current?.click()}>
+                {busy ? "Encrypting…" : "Upload"}
+              </Button>
+            </>
+          )
+        }
+      />
+      <CardBody>
+        {files.length === 0 ? (
+          <EmptyState title="No files" description="Encrypted files you upload appear here." />
+        ) : (
+          <ul className="flex flex-col divide-y divide-border">
+            {files.map((file) => (
+              <li key={file.id} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-mono text-sm">{file.name}</span>
+                  <Badge>{formatSize(file.sizeBytes)}</Badge>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="secondary"
                     onClick={async () => {
-                      if (!confirm(`Delete ${file.name}?`)) return;
-                      await api.deleteFile(vaultId, file.id);
-                      await reload();
+                      const { name, blob } = await downloadFile(vaultId, file);
+                      const url = URL.createObjectURL(blob);
+                      const anchor = document.createElement("a");
+                      anchor.href = url;
+                      anchor.download = name;
+                      anchor.click();
+                      URL.revokeObjectURL(url);
                     }}
-                    className="rounded border border-red-800 px-2 py-0.5 text-xs text-red-400"
                   >
-                    Delete
-                  </button>
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+                    Download
+                  </Button>
+                  {isOwner && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={async () => {
+                        const ok = await confirm({ title: `Delete ${file.name}?`, confirmLabel: "Delete", danger: true });
+                        if (!ok) return;
+                        await api.deleteFile(vaultId, file.id);
+                        toast("File deleted.", "success");
+                        await reload();
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardBody>
+    </Card>
   );
 }

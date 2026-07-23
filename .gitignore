@@ -20,6 +20,9 @@
 # production
 /build
 
+# cli build artifact (rebuilt on publish via prepack)
+/cli/dist
+
 # misc
 .DS_Store
 *.pem

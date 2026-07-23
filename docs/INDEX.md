@@ -28,6 +28,7 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [ADR-007](decisions/adr-007-object-storage.md) — storage adapter interface; Postgres-backed blob store for V1 (Accepted)
 - [ADR-008](decisions/adr-008-cli-runtime.md) — CLI runtime: Node/tsx in-repo sharing the crypto module; 0600-file credential storage V1 (Accepted)
 - [ADR-009](decisions/adr-009-service-accounts.md) — service accounts as flagged users on the device-grant machinery (Accepted)
+- [ADR-010](decisions/adr-010-ui-component-strategy.md) — UI: custom in-repo component kit, zero new runtime deps (preserves Phase H client-surface invariant) (Accepted)
 
 ## Planned
 

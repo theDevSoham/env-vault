@@ -1,1 +1,106 @@
 @import "tailwindcss";
+
+/* ── Env Vault design tokens (ADR-010) ─────────────────────────────────
+   Dark-first developer-tool aesthetic. Surfaces layer from bg → 0 → 1 → 2.
+   Accent is emerald (the product's existing accent). No inline styles. */
+@theme {
+  --color-bg: #0a0b0d;
+  --color-surface-0: #101215;
+  --color-surface-1: #16181d;
+  --color-surface-2: #1d2027;
+  --color-border: #262a31;
+  --color-border-strong: #363b44;
+
+  --color-text: #e8eaed;
+  --color-muted: #9aa1ab;
+  --color-faint: #6b7280;
+
+  --color-accent: #10b981;
+  --color-accent-hover: #0ea472;
+  --color-accent-fg: #04120c;
+  --color-accent-soft: #10b9811a;
+
+  --color-danger: #f0616b;
+  --color-danger-soft: #f0616b1a;
+  --color-warn: #f5b544;
+  --color-warn-soft: #f5b5441a;
+  --color-info: #56a8f0;
+  --color-info-soft: #56a8f01a;
+
+  --radius: 0.625rem;
+  --radius-sm: 0.4rem;
+  --radius-lg: 0.9rem;
+
+  --shadow-pop: 0 10px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+  }
+  /* Focus ring: visible, accent, never removed (a11y) */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* Thin dark scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+}
+
+@layer utilities {
+  @keyframes ev-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes ev-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes ev-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-fade-in {
+    animation: ev-fade-in 0.15s ease-out;
+  }
+  .animate-pop-in {
+    animation: ev-pop-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-spin-slow {
+    animation: ev-spin 0.7s linear infinite;
+  }
+}

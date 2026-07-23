@@ -4,9 +4,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { api, type InvitationDto } from "@/src/lib/api/client";
-import { createVault, decryptVaultListName, logout } from "@/src/lib/client/flows";
+import { createVault, decryptVaultListName } from "@/src/lib/client/flows";
+import { AppShell, PageHeader } from "@/src/components/AppShell";
 import { UnlockGate } from "@/src/components/UnlockGate";
-import { useSession } from "@/src/components/useSession";
+import {
+  Badge,
+  Button,
+  Card,
+  Dialog,
+  DialogFooter,
+  EmptyState,
+  Field,
+  Input,
+  Spinner,
+  useToast,
+} from "@/src/components/ui";
 
 interface VaultRow {
   vaultId: string;
@@ -15,13 +27,14 @@ interface VaultRow {
 }
 
 function VaultsInner() {
-  const session = useSession();
   const router = useRouter();
+  const toast = useToast();
   const [vaults, setVaults] = useState<VaultRow[]>([]);
   const [invitations, setInvitations] = useState<InvitationDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
     const [{ vaults: list }, { invitations: pending }] = await Promise.all([
@@ -45,107 +58,115 @@ function VaultsInner() {
   }, [reload]);
 
   return (
-    <main className="mx-auto w-full max-w-3xl p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Your vaults</h1>
-        <div className="flex items-center gap-3 text-sm text-neutral-400">
-          <span>{session.email}</span>
-          <Link href="/devices" className="rounded border border-neutral-700 px-3 py-1">
-            CLI devices
-          </Link>
-          <button
-            onClick={async () => {
-              await logout();
-              router.replace("/login");
-            }}
-            className="rounded border border-neutral-700 px-3 py-1"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+    <>
+      <PageHeader
+        title="Vaults"
+        description="Encrypted projects. Names are decrypted locally."
+        action={<Button onClick={() => setCreating(true)}>New vault</Button>}
+      />
 
       {invitations.length > 0 && (
-        <section className="mb-6 rounded border border-sky-800 bg-sky-950/30 p-4">
-          <h2 className="mb-2 font-semibold">Pending invitations</h2>
-          {invitations.map((invitation) => (
-            <div key={invitation.id} className="flex items-center justify-between py-1 text-sm">
-              <span className="text-neutral-300">
-                Vault invitation · role: {invitation.role}
-                <span className="ml-2 text-xs text-neutral-500">
-                  (vault name is encrypted until you join)
-                </span>
-              </span>
-              <button
-                onClick={async () => {
-                  const { state } = await api.acceptInvitation(invitation.id);
-                  if (state === "accepted") {
-                    alert("Accepted. The vault owner must approve your key before you get access.");
-                  }
-                  await reload();
-                }}
-                className="rounded bg-sky-700 px-3 py-1"
-              >
-                Accept
-              </button>
-            </div>
-          ))}
-        </section>
+        <Card className="mb-6 border-info/30">
+          <div className="border-b border-border px-5 py-3 text-sm font-semibold">
+            Pending invitations
+          </div>
+          <div className="divide-y divide-border">
+            {invitations.map((invitation) => (
+              <div key={invitation.id} className="flex items-center justify-between gap-4 px-5 py-3">
+                <div className="text-sm">
+                  <span className="text-text">Vault invitation</span>
+                  <Badge tone="info" className="ml-2">{invitation.role}</Badge>
+                  <p className="mt-0.5 text-xs text-faint">
+                    The vault name stays encrypted until you join.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    const { state } = await api.acceptInvitation(invitation.id);
+                    toast(
+                      state === "accepted"
+                        ? "Accepted — the owner must approve your key before access."
+                        : "Joined the vault.",
+                      "success"
+                    );
+                    await reload();
+                  }}
+                >
+                  Accept
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
-
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setBusy(true);
-          try {
-            const vaultId = await createVault(newName);
-            setNewName("");
-            router.push(`/vaults/${vaultId}`);
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className="mb-6 flex gap-2"
-      >
-        <input
-          required
-          placeholder="New vault name (encrypted before upload)"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-2"
-        />
-        <button disabled={busy} className="rounded bg-emerald-600 px-4 py-2 font-medium disabled:opacity-50">
-          Create vault
-        </button>
-      </form>
 
       {loading ? (
-        <p className="text-neutral-400">Decrypting vault names…</p>
+        <div className="flex items-center gap-2 py-16 text-sm text-muted">
+          <Spinner className="size-4" /> Decrypting vault names…
+        </div>
       ) : vaults.length === 0 ? (
-        <p className="text-neutral-500">No vaults yet — create one above.</p>
+        <EmptyState
+          title="No vaults yet"
+          description="Create your first encrypted vault to start storing secrets."
+          action={<Button onClick={() => setCreating(true)}>New vault</Button>}
+        />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {vaults.map((vault) => (
-            <li key={vault.vaultId}>
-              <Link
-                href={`/vaults/${vault.vaultId}`}
-                className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-4 py-3 hover:border-neutral-600"
-              >
-                <span className="font-medium">{vault.name}</span>
-                <span className="text-xs uppercase text-neutral-500">{vault.role}</span>
-              </Link>
-            </li>
+            <Link key={vault.vaultId} href={`/vaults/${vault.vaultId}`}>
+              <Card className="h-full p-4 transition-colors hover:border-border-strong">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="truncate font-medium text-text">{vault.name}</span>
+                  <Badge tone={vault.role === "owner" ? "accent" : "neutral"}>{vault.role}</Badge>
+                </div>
+                <p className="mt-3 font-mono text-[10px] text-faint">{vault.vaultId.slice(0, 8)}…</p>
+              </Card>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
-    </main>
+
+      <Dialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        title="New vault"
+        description="A vault key is generated in your browser and wrapped to your account."
+        size="sm"
+      >
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            try {
+              const vaultId = await createVault(newName);
+              setNewName("");
+              setCreating(false);
+              router.push(`/vaults/${vaultId}`);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <Field label="Vault name" hint="Encrypted before it leaves this device.">
+            <Input autoFocus required value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Acme Project" />
+          </Field>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button type="submit" loading={busy}>Create vault</Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
+    </>
   );
 }
 
 export default function VaultsPage() {
   return (
     <UnlockGate>
-      <VaultsInner />
+      <AppShell>
+        <VaultsInner />
+      </AppShell>
     </UnlockGate>
   );
 }

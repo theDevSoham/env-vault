@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "cli": "tsx cli/index.ts"
+    "cli": "tsx cli/index.ts",
+    "build:cli": "esbuild cli/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=cli/dist/envvault.js --external:libsodium-wrappers-sumo"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "tailwindcss": "^4",

@@ -1,0 +1,24 @@
+{
+  "name": "envvault",
+  "version": "0.1.0",
+  "description": "Zero-knowledge secrets CLI for Env Vault — pull .env secrets and inject them into processes, with client-side decryption.",
+  "keywords": ["env", "secrets", "dotenv", "encryption", "zero-knowledge", "cli"],
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "envvault": "dist/envvault.js"
+  },
+  "scripts": {
+    "prepack": "npm --prefix .. run build:cli"
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "libsodium-wrappers-sumo": "0.8.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -15,6 +15,8 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
+- [CLI Publish-Prep](cli-publish-prep__worklog_2026-07-23.md) — 2026-07-23 — made `envvault` an npm-publishable package (separate cli/package.json, esbuild bundle, root stays private); verified via clean-project install; not published.
+- [UI Restructure](ui-restructure__worklog_2026-07-23.md) — 2026-07-23 — full design-system overhaul (custom kit, zero new runtime deps, ADR-010); native dialogs replaced; browser-verified, no plaintext leak, no CSP violations; suite at 98.
 - [Phase 2 — Machine Access](phase-2-machine-access__worklog_2026-07-23.md) — 2026-07-23 — service accounts (CI credentials, one-time display), expiring memberships, CLI env-var mode + GH Actions doc; live CI-chain verified; suite at 98.
 - [Phase 1.5 — CLI](phase-1.5-cli__worklog_2026-07-23.md) — 2026-07-23 — device-auth login (fingerprint-verified), vaults/envs/pull/run; verified end-to-end against the live server; suite at 93.
 - [Phase H — Security Review](phase-h-security-review__worklog_2026-07-23.md) — 2026-07-23 — H1–H8 complete; SR-1…SR-7 fixed, 4 accepted risks; all 19 MVP criteria pass — **V1 complete**.
