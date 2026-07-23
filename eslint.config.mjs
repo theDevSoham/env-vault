@@ -21,6 +21,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // esbuild bundle output (generated CJS — not source)
+    "cli/dist/**",
   ]),
 ]);
 

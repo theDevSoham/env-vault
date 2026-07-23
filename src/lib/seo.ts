@@ -4,9 +4,10 @@
  * routes (icon/apple-icon/opengraph-image). Pure data — no client code.
  */
 
-// TODO: replace with the real deployed origin before launch. Used as
-// metadataBase so OG/Twitter image URLs resolve to absolute URLs.
-export const SITE_URL = "https://env-vault.app";
+// Deployed origin. Used as metadataBase so OG/Twitter image URLs, canonical
+// links and the sitemap resolve to absolute URLs. Update if the domain changes
+// (e.g. a custom domain replacing the Vercel URL).
+export const SITE_URL = "https://env-vault-blond.vercel.app";
 
 export const SITE = {
   name: "Env Vault",

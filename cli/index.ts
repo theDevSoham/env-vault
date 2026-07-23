@@ -15,7 +15,9 @@ import { credentialsPath, deleteCredentials, loadCredentials, saveCredentials } 
  * SECURITY: no --password flags exist; login is browser device-authorization.
  */
 
-const DEFAULT_SERVER = "http://localhost:3000";
+// Deployed Env Vault backend. Override per-invocation with --server, or set
+// ENVVAULT_SERVER (useful for self-hosting or local dev against localhost:3000).
+const DEFAULT_SERVER = process.env.ENVVAULT_SERVER ?? "https://env-vault-blond.vercel.app";
 
 function parseArgs(argv: string[]): { command: string; flags: Map<string, string>; rest: string[] } {
   const [command = "help", ...args] = argv;
