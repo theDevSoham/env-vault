@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "cli": "tsx cli/index.ts",
-    "build:cli": "esbuild cli/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=cli/dist/envvault.js --external:libsodium-wrappers-sumo"
+    "build:cli": "esbuild cli/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=cli/dist/envvault.js --external:libsodium-wrappers-sumo",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:generate": "drizzle-kit generate",
+    "vercel-build": "tsx scripts/migrate.ts && next build"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

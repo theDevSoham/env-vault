@@ -15,7 +15,8 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
-- [Auth Form UX Fix](auth-form-ux__worklog_2026-07-23.md) — 2026-07-23 — signup/login: autofill-proof (FormData), button no longer silently disabled, specific per-field + dev-friendly API errors; browser-verified.
+- [Prod Migration Runner](prod-migrations__worklog_2026-07-23.md) — 2026-07-23 — standalone `scripts/migrate.ts` + `db:migrate`/`vercel-build` scripts to migrate the (empty) prod DB pre-deploy.
+- [Auth Form UX + Prod CSP Fix](auth-form-ux__worklog_2026-07-23.md) — 2026-07-23 — signup/login: autofill-proof (FormData), button no longer silently disabled, specific per-field + dev-friendly API errors; browser-verified.
 - [SEO & Brand Assets](seo-assets__worklog_2026-07-23.md) — 2026-07-23 — favicon (SVG shield), generated OG + apple-touch images, full metadata, JSON-LD, robots + sitemap; all self-contained, browser-verified. `SITE_URL` placeholder to update at deploy.
 - [CLI Publish-Prep](cli-publish-prep__worklog_2026-07-23.md) — 2026-07-23 — made `envvault` an npm-publishable package (separate cli/package.json, esbuild bundle, root stays private); verified via clean-project install; not published.
 - [UI Restructure](ui-restructure__worklog_2026-07-23.md) — 2026-07-23 — full design-system overhaul (custom kit, zero new runtime deps, ADR-010); native dialogs replaced; browser-verified, no plaintext leak, no CSP violations; suite at 98.
