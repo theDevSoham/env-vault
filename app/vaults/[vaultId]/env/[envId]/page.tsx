@@ -7,6 +7,7 @@ import { type StructuralDiff } from "@/src/lib/crypto";
 import {
   compareRevisions,
   decryptRevisionDiff,
+  exportEnvironment,
   loadVault,
   restoreRevision,
 } from "@/src/lib/client/flows";
@@ -74,15 +75,56 @@ function EnvironmentInner({ vaultId, envId }: { vaultId: string; envId: string }
     })();
   }, [vaultId, envId, reloadHistory]);
 
+  async function doExport(format: "env" | "json"): Promise<void> {
+    if (head === null || head === 0) return;
+    setBusy(true);
+    try {
+      const content = await exportEnvironment(vaultId, envId, head, format);
+      const safeName = (envName || "environment").toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = format === "env" ? `${safeName}.env` : `${safeName}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (head === null) return <p className="p-8 text-neutral-400">Decrypting environment…</p>;
 
   return (
     <main className="mx-auto w-full max-w-4xl p-6">
-      <header className="mb-6">
-        <Link href={`/vaults/${vaultId}`} className="text-sm text-neutral-500 hover:text-neutral-300">
-          ← Vault
-        </Link>
-        <h1 className="text-2xl font-bold">{envName}</h1>
+      <header className="mb-6 flex items-end justify-between">
+        <div>
+          <Link href={`/vaults/${vaultId}`} className="text-sm text-neutral-500 hover:text-neutral-300">
+            ← Vault
+          </Link>
+          <h1 className="text-2xl font-bold">{envName}</h1>
+        </div>
+        <div className="text-right">
+          <div className="flex gap-2">
+            <button
+              disabled={busy || head === 0}
+              onClick={() => void doExport("env")}
+              className="rounded border border-neutral-700 px-3 py-1 text-sm hover:border-neutral-500 disabled:opacity-40"
+            >
+              Download .env
+            </button>
+            <button
+              disabled={busy || head === 0}
+              onClick={() => void doExport("json")}
+              className="rounded border border-neutral-700 px-3 py-1 text-sm hover:border-neutral-500 disabled:opacity-40"
+            >
+              Download JSON
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] text-neutral-600">
+            Generated locally — the download is a plaintext copy you now control.
+          </p>
+        </div>
       </header>
 
       <SecretsEditor

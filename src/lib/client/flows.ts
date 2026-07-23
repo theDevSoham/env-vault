@@ -31,6 +31,7 @@ import {
   type StructuralDiff,
 } from "../crypto";
 import { fromB64, toB64 } from "../crypto/sodium";
+import { serializeDotenv, serializeJson } from "./envformat";
 import {
   cacheVaultKey,
   clearSession,
@@ -307,6 +308,28 @@ export async function decryptRevisionDiff(
     revision: meta.number,
     generation: meta.keyGeneration,
   });
+}
+
+// ————— export (Phase G, handoff §8) —————
+
+/**
+ * Generate an export ENTIRELY client-side: decrypt the head snapshot in
+ * memory, serialize, hand back the text for a local download. The plaintext
+ * never travels to the server — only the metadata audit event does
+ * (environment id + format, handoff §27).
+ */
+export async function exportEnvironment(
+  vaultId: string,
+  envId: string,
+  headRevision: number,
+  format: "env" | "json"
+): Promise<string> {
+  const snapshot = await loadSnapshot(vaultId, envId, headRevision);
+  const entries = snapshot.keys.map((key) => ({ name: key.name, value: key.value }));
+  const content = format === "env" ? serializeDotenv(entries) : serializeJson(entries);
+  // Audit is best-effort metadata; a failure must not block the local export.
+  await api.auditExport(vaultId, { environmentId: envId, format }).catch(() => {});
+  return content;
 }
 
 // ————— membership (E3) —————
