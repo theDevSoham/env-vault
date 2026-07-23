@@ -21,6 +21,46 @@ export class RevisionConflict extends ApiClientError {
   }
 }
 
+/**
+ * Turn any thrown error into a human-readable message plus a dev-friendly
+ * technical detail (HTTP status + error code) for the UI. Used by auth screens
+ * so users see specific, actionable messages instead of a generic toast.
+ */
+export function humanizeApiError(
+  error: unknown,
+  context: "signup" | "login" | "generic" = "generic"
+): { message: string; detail?: string } {
+  if (error instanceof ApiClientError) {
+    const detail = `${error.status} · ${error.code}`;
+    const messages: Record<string, string> = {
+      email_taken: "An account with this email already exists — try signing in instead.",
+      unauthorized:
+        context === "login"
+          ? "Incorrect email or password. Your password is case-sensitive."
+          : "You're not authorized to do that.",
+      invalid_body:
+        "Some fields didn't pass validation — check your email and that your password is at least 10 characters.",
+      invalid_email: "That doesn't look like a valid email address.",
+      invalid_json: "The request was malformed. Please try again.",
+      rate_limited: "Too many attempts. Please wait about a minute and try again.",
+      body_too_large: "That request was too large.",
+      internal:
+        "The server hit an unexpected error. If this persists, its database or environment may be misconfigured.",
+    };
+    if (messages[error.code]) return { message: messages[error.code], detail };
+    if (error.status >= 500)
+      return { message: "The server hit an error. Please try again shortly.", detail };
+    if (error.status === 0)
+      return { message: "Couldn't reach the server. Check your connection.", detail };
+    return { message: `Request failed (${error.status}).`, detail };
+  }
+  // Native fetch throws TypeError on network/DNS/CORS failure.
+  if (error instanceof TypeError) {
+    return { message: "Couldn't reach the server. Check your internet connection and try again." };
+  }
+  return { message: error instanceof Error ? error.message : "Something went wrong." };
+}
+
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method,

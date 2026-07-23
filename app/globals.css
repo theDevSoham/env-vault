@@ -53,6 +53,15 @@
     outline-offset: 2px;
     border-radius: 2px;
   }
+  /* Keep browser/Google autofilled fields on-theme (Chrome forces a yellow bg). */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-text);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface-0) inset;
+    caret-color: var(--color-text);
+    transition: background-color 9999s ease-out 0s;
+  }
   /* Thin dark scrollbars */
   * {
     scrollbar-width: thin;
