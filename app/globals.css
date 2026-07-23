@@ -53,7 +53,8 @@
     outline-offset: 2px;
     border-radius: 2px;
   }
-  /* Keep browser/Google autofilled fields on-theme (Chrome forces a yellow bg). */
+  /* Keep browser/Google autofilled fields on-theme (Chrome forces a yellow bg),
+     and fire a no-op animation so JS can detect autofill (form validity gating). */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
@@ -61,6 +62,14 @@
     -webkit-box-shadow: 0 0 0 1000px var(--color-surface-0) inset;
     caret-color: var(--color-text);
     transition: background-color 9999s ease-out 0s;
+    animation-name: ev-autofill;
+    animation-duration: 1ms;
+  }
+  @keyframes ev-autofill {
+    from {
+    }
+    to {
+    }
   }
   /* Thin dark scrollbars */
   * {

@@ -1,28 +1,32 @@
-# Auth Form UX Fix · Worklog · 2026-07-23
+# Auth Form UX + Prod CSP Fix · Worklog · 2026-07-23
 
-**Trigger:** signup "Create account" button did nothing with fields filled; Google autofill not detected; errors were a single generic message.
+**Triggers:** (1) signup button UX; (2) production signup/login "not working" with CSP errors in console and `login?email=…&password=…` in the URL.
 
-## Root cause
+## The real production bug (most important)
 
-- The button was `disabled={!acknowledged}` — dead with no feedback until the checkbox was ticked.
-- Inputs were **controlled** (`value={state}`); browser/Google autofill often doesn't fire React's `onChange`, so state stayed empty while the fields looked filled → submit used empty values.
-- Errors were one `useState<string>` shown in a single spot.
+Console on prod showed Next.js scripts blocked by CSP ("Executing inline script violates … a nonce is required") and the form submitting as a **native GET with credentials in the URL** (`/login?email=…&password=…`).
 
-## Fix (signup + login)
+**Root cause:** the nonce-based CSP (`proxy.ts`) generates a fresh nonce per request, but login/signup/landing were **statically prerendered** — their script-tag nonces are baked at build time and never match the runtime CSP nonce. So on prod every script is blocked → React never hydrates → the `onSubmit` handler (which calls `preventDefault` + fetch) never attaches → the browser does a native GET form submit, leaking credentials into the URL. Works in dev because dev always renders dynamically.
 
-- **Uncontrolled inputs read via `FormData` on submit** → autofill values are always captured (DOM is the source of truth). Inputs carry `name` + `autoComplete`.
-- **Button only disabled while `busy`** — validation happens on submit and reports specifically, instead of a silently-disabled button.
-- **Per-field + form-level errors**: `{email, password, confirm, acknowledge, form, formDetail}`; each rendered inline via `Field error=` / a danger banner. Errors clear on input.
-- **`humanizeApiError(error, context)`** (new, in `src/lib/api/client.ts`): maps API codes to human-readable messages (`email_taken`, `unauthorized`, `invalid_body`, `rate_limited`, `internal`, network `TypeError`, 5xx) **plus a dev-friendly `status · code` detail line**. `email_taken` attaches to the email field; others show a banner.
-- **Autofill styling**: `input:-webkit-autofill` override in globals.css so Chrome's yellow autofill background stays on-theme.
+**Fix:** `export const dynamic = "force-dynamic"` in `app/layout.tsx` so Next renders every page per-request and stamps the live nonce onto the scripts. Verified on a **production build** (`next build && next start`): within one response the CSP-header nonce equals the script-tag nonces; browser shows **no CSP violations**, the page hydrates, login submits via fetch and routes to `/vaults`, and **no credentials appear in the URL**.
 
-## Verification (browser, live)
+**Defense-in-depth:** forms now use `method="post"` so that even if JS ever fails, a native submit posts credentials in the body (405), never in the URL/query/history.
 
-- Empty submit → button clickable, shows all four specific field errors (no silent no-op).
-- **Autofill simulation** — set input `.value`s via the native setter with **zero React events fired** (exactly what autofill does), submitted: values were captured, request reached the server, and the specific `email_taken` message rendered on the email field. (Old controlled code would have submitted empty.)
-- Client validation: invalid email, short password ("Use at least 10 characters (you have 5)."), and password mismatch all show correct per-field messages.
-- tsc/lint clean; `next build` ok; 98 tests green.
+## Button behavior (reverted per request)
 
-## Still pending (from prior turn, unrelated to this fix)
+The button is **disabled until the form is actually valid** again (user asked for this; the earlier always-enabled version was wrong). Validity gating is **autofill-proof**: inputs are uncontrolled, and a `recompute()` reads live DOM values on `onInput`/`onChange`, on `onAnimationStart` (a no-op `ev-autofill` keyframe on `:-webkit-autofill` fires when Chrome autofills), and once on mount (pre-hydration autofill). So the button enables correctly whether the user types or autofills. Signup requires: valid email, password ≥10, matching confirm, acknowledged. Verified: disabled empty → enabled after valid input.
 
-- Deployed Vercel API 500s on all DB calls — **`DATABASE_URL` + `SERVER_SECRET` not set in Vercel env vars** (Neon DB itself is healthy). CLI now defaults to the Vercel URL but can't be verified end-to-end until those are set and redeployed.
+## Errors (kept)
+
+`humanizeApiError(error, context)` maps API codes → human-readable messages + a dev-friendly `status · code` detail line; `email_taken` shows on the email field, others in a banner. Autofilled-then-server-rejected shows the specific message.
+
+## Verification
+
+- Production build: nonce match confirmed; browser E2E login works with zero CSP violations and no creds-in-URL.
+- tsc/lint clean; `next build` all routes now `ƒ` (dynamic).
+
+## Still required for the DEPLOYED app to work
+
+Both are prerequisites on Vercel:
+1. **Redeploy** with this `force-dynamic` fix (otherwise scripts stay blocked).
+2. **Set `DATABASE_URL` + `SERVER_SECRET`** in Vercel env vars (the API still 500s without them; Neon DB itself is healthy).

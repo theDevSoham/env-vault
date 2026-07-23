@@ -3,6 +3,13 @@ import { Providers } from "@/src/components/Providers";
 import { SITE, jsonLd } from "@/src/lib/seo";
 import "./globals.css";
 
+// The nonce-based CSP (proxy.ts) generates a fresh nonce per request; Next only
+// stamps that nonce onto script tags during dynamic rendering. Static pages ship
+// a build-time nonce that never matches the runtime CSP header, so on prod their
+// scripts get blocked, hydration fails, and forms fall back to a native submit
+// (credentials in the URL). Forcing dynamic rendering keeps the nonce consistent.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {

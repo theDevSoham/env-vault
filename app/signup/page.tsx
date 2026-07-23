@@ -2,65 +2,68 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiClientError, humanizeApiError } from "@/src/lib/api/client";
 import { signup } from "@/src/lib/client/flows";
 import { Logo } from "@/src/components/Logo";
 import { Button, Card, Field, Input } from "@/src/components/ui";
 
-interface FieldErrors {
-  email?: string;
-  password?: string;
-  confirm?: string;
-  acknowledge?: string;
-  form?: string;
-  formDetail?: string;
-}
-
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export default function SignupPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [canSubmit, setCanSubmit] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [emailError, setEmailError] = useState("");
+  const [formError, setFormError] = useState<{ message: string; detail?: string } | null>(null);
 
-  const clear = (key: keyof FieldErrors) =>
-    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined, form: undefined } : prev));
+  // Read live values from the DOM so browser/Google autofill is always captured.
+  const readForm = useCallback(() => {
+    const form = formRef.current;
+    if (!form) return null;
+    const get = (name: string) => (form.elements.namedItem(name) as HTMLInputElement | null);
+    return {
+      email: (get("email")?.value ?? "").trim(),
+      password: get("password")?.value ?? "",
+      confirm: get("confirm")?.value ?? "",
+      acknowledged: !!get("acknowledge")?.checked,
+    };
+  }, []);
+
+  // Recompute whether the form is complete/valid → gates the button.
+  const recompute = useCallback(() => {
+    const v = readForm();
+    if (!v) return;
+    setCanSubmit(
+      EMAIL_RE.test(v.email) &&
+        v.password.length >= 10 &&
+        v.confirm === v.password &&
+        v.acknowledged
+    );
+  }, [readForm]);
+
+  // Catch values autofilled before hydration.
+  useEffect(() => {
+    recompute();
+  }, [recompute]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Read from the DOM (not React state) so Google/browser autofill is captured.
-    const data = new FormData(event.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
-    const password = String(data.get("password") ?? "");
-    const confirm = String(data.get("confirm") ?? "");
-    const acknowledged = data.get("acknowledge") != null;
-
-    const next: FieldErrors = {};
-    if (!email) next.email = "Enter your email.";
-    else if (!EMAIL_RE.test(email)) next.email = "That doesn't look like a valid email address.";
-    if (!password) next.password = "Choose a password.";
-    else if (password.length < 10) next.password = `Use at least 10 characters (you have ${password.length}).`;
-    if (!confirm) next.confirm = "Re-enter your password to confirm.";
-    else if (password && confirm !== password) next.confirm = "Passwords don't match.";
-    if (!acknowledged) next.acknowledge = "Please acknowledge this before continuing.";
-    if (Object.keys(next).length > 0) {
-      setErrors(next);
-      return;
-    }
-
-    setErrors({});
+    const v = readForm();
+    if (!v || !canSubmit) return;
+    setEmailError("");
+    setFormError(null);
     setBusy(true);
     try {
-      await signup(email, password);
+      await signup(v.email, v.password);
       router.push("/vaults");
     } catch (error) {
-      const { message, detail } = humanizeApiError(error, "signup");
-      // Attach a taken email to the email field; everything else to a form banner.
+      const humanized = humanizeApiError(error, "signup");
       if (error instanceof ApiClientError && error.code === "email_taken") {
-        setErrors({ email: message });
+        setEmailError(humanized.message);
       } else {
-        setErrors({ form: message, formDetail: detail });
+        setFormError(humanized);
       }
       setBusy(false);
     }
@@ -76,33 +79,41 @@ export default function SignupPage() {
           data is <strong>permanently unrecoverable</strong> — Env Vault cannot reset it.
         </div>
 
-        {errors.form && (
+        {formError && (
           <div className="mb-4 rounded-sm border border-danger/40 bg-danger-soft p-3 text-sm text-danger">
-            {errors.form}
-            {errors.formDetail && (
-              <span className="mt-1 block font-mono text-[11px] text-danger/70">{errors.formDetail}</span>
+            {formError.message}
+            {formError.detail && (
+              <span className="mt-1 block font-mono text-[11px] text-danger/70">{formError.detail}</span>
             )}
           </div>
         )}
 
-        <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-          <Field label="Email" error={errors.email}>
-            <Input name="email" type="email" autoComplete="email" placeholder="you@example.com" onInput={() => clear("email")} />
+        <form
+          ref={formRef}
+          onSubmit={onSubmit}
+          onInput={recompute}
+          onChange={recompute}
+          onAnimationStart={(e) => {
+            if (e.animationName === "ev-autofill") recompute();
+          }}
+          noValidate
+          method="post"
+          className="flex flex-col gap-4"
+        >
+          <Field label="Email" error={emailError}>
+            <Input name="email" type="email" autoComplete="email" placeholder="you@example.com" onInput={() => setEmailError("")} />
           </Field>
-          <Field label="Password" hint="Minimum 10 characters." error={errors.password}>
-            <Input name="password" type="password" autoComplete="new-password" placeholder="••••••••••" onInput={() => clear("password")} />
+          <Field label="Password" hint="Minimum 10 characters.">
+            <Input name="password" type="password" autoComplete="new-password" placeholder="••••••••••" />
           </Field>
-          <Field label="Confirm password" error={errors.confirm}>
-            <Input name="confirm" type="password" autoComplete="new-password" placeholder="••••••••••" onInput={() => clear("confirm")} />
+          <Field label="Confirm password">
+            <Input name="confirm" type="password" autoComplete="new-password" placeholder="••••••••••" />
           </Field>
-          <div>
-            <label className="flex items-start gap-2 text-xs text-muted">
-              <input name="acknowledge" type="checkbox" className="mt-0.5 accent-accent" onChange={() => clear("acknowledge")} />
-              I understand that losing my password means losing my encrypted data.
-            </label>
-            {errors.acknowledge && <p className="mt-1 text-xs text-danger">{errors.acknowledge}</p>}
-          </div>
-          <Button type="submit" size="lg" loading={busy} className="w-full">
+          <label className="flex items-start gap-2 text-xs text-muted">
+            <input name="acknowledge" type="checkbox" className="mt-0.5 accent-accent" onChange={recompute} />
+            I understand that losing my password means losing my encrypted data.
+          </label>
+          <Button type="submit" size="lg" loading={busy} disabled={!canSubmit} className="w-full">
             {busy ? "Generating keys…" : "Create account"}
           </Button>
         </form>
