@@ -14,7 +14,7 @@ Statuses: `not-started` · `in-progress` · `blocked` · `done`
 | 05 | [Phase E — Web client](05-phase-e-web-client.md) | 02, 04 | done |
 | 06 | [Phase F — Version control](06-phase-f-version-control.md) | 05 | done |
 | 07 | [Phase G — Export](07-phase-g-export.md) | 05 | done |
-| 08 | [Phase H — Security review](08-phase-h-security-review.md) | 04–07 | not-started |
+| 08 | [Phase H — Security review](08-phase-h-security-review.md) | 04–07 | done |
 | 09 | [Phase 1.5 — CLI](09-phase-cli.md) | 08 | not-started |
 
 ## Conventions

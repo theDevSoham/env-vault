@@ -25,7 +25,13 @@ export const LARGE_BODY_LIMIT = 64 * 1024 * 1024; // 64 MiB (files, rotation)
 export function json(data: unknown, status = 200, headers?: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json", ...headers },
+    headers: {
+      "content-type": "application/json",
+      // API responses carry envelopes/session data — never cacheable (SR-4)
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      ...headers,
+    },
   });
 }
 

@@ -1,6 +1,6 @@
 # Env Vault — Threat Model
 
-**Status:** Draft (Phase A) — requires review in Phase H
+**Status:** Reviewed (Phase H, 2026-07-23 — see [security-review-v1.md](security-review-v1.md); no divergence from implementation found)
 **Sources:** [PROJECT_HANDOFF.md](../PROJECT_HANDOFF.md) §3–4, §23, §26–27, §36–37; [ARCHITECTURE.md](../ARCHITECTURE.md)
 
 ---

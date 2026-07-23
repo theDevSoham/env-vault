@@ -6,7 +6,8 @@ Format: `- [Title](file.md) — one-line description (status)`
 
 ## Documents
 
-- [Threat Model](threat-model.md) — assets, trust boundaries, adversaries T1–T10, non-goals, known limitations L1–L4 (Draft — Phase H review pending)
+- [Threat Model](threat-model.md) — assets, trust boundaries, adversaries T1–T10, non-goals, known limitations L1–L4 (Reviewed — Phase H)
+- [V1 Security Review](security-review-v1.md) — Phase H findings log: H1–H8 results, SR-1…SR-7 fixes, accepted risks, MVP #18/#19 sign-off (Complete)
 - [Cryptographic Specification](crypto-spec.md) — primitives, versioned envelope formats, key hierarchy, KDF params, nonce strategy, snapshot & diff formats, crypto module API (Draft — binding for Phase B)
 - [Account & Key Lifecycle](account-key-lifecycle.md) — signup, login/unlock, password change, KDF upgrades, recovery posture, deletion (Draft)
 - [Sharing & Invitation Protocol](sharing-protocol.md) — invitation states, existing-user flow, deferred-wrap flow, multi-generation entitlement, fingerprints (Draft)
@@ -26,7 +27,7 @@ Format: `- [Title](file.md) — one-line description (status)`
 
 ## Planned
 
-- `security-review-v1.md` — Phase H findings log (planned)
+*(none — V1 documentation set is complete; next planned doc is the finalized CLI provisioning design before Phase 1.5)*
 
 ## Conventions
 

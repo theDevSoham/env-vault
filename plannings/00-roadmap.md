@@ -51,8 +51,10 @@ Do **not** start by building UI (handoff §35). Crypto correctness is proven in 
 - [x] 15. Users can export an environment as JSON *(browser-verified, Phase G)*
 - [x] 16. Export generation occurs locally *(network trace: zero plaintext left the browser, Phase G)*
 - [x] 17. The web UI never provides a plaintext secret reveal interface *(by design; re-audited in Phase H)*
-- [ ] 18. Audit logs contain no plaintext secret material *(spot-tested; formal review = Phase H)*
-- [ ] 19. A complete database dump is insufficient to decrypt vault secrets *(by construction; formal argument = Phase H)*
+- [x] 18. Audit logs contain no plaintext secret material *(Phase H sign-off: call-site review + automated assertion — security-review-v1.md)*
+- [x] 19. A complete database dump is insufficient to decrypt vault secrets *(Phase H sign-off: full decryption-chain argument — security-review-v1.md)*
+
+**All 19 MVP criteria pass — V1 complete (2026-07-23).**
 
 ## Explicitly out of scope for V1 (handoff §32 — do not build)
 

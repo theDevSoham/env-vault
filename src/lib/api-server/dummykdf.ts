@@ -13,6 +13,10 @@ function serverSecret(): Uint8Array {
   const fromEnv = process.env.SERVER_SECRET;
   if (fromEnv && fromEnv.length >= 32) {
     cachedSecret = new TextEncoder().encode(fromEnv);
+  } else if (process.env.NODE_ENV === "production") {
+    // In production an ephemeral secret would rotate dummy salts on every
+    // restart — a detectable enumeration signal. Fail loudly instead (SR-3).
+    throw new Error("SERVER_SECRET must be set in production (>=32 chars)");
   } else {
     // Dev fallback: ephemeral random secret (dummy salts change across restarts).
     cachedSecret = crypto.getRandomValues(new Uint8Array(32));

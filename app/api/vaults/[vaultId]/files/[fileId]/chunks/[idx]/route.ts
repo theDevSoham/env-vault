@@ -20,6 +20,10 @@ export const GET = withRoute<Ctx>(async (request, { params }) => {
   if (!chunk) throw notFound();
   return new Response(Buffer.from(chunk), {
     status: 200,
-    headers: { "content-type": "application/octet-stream" },
+    headers: {
+      "content-type": "application/octet-stream",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+    },
   });
 });

@@ -1,12 +1,13 @@
+import "server-only";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
 /**
- * SERVER-ONLY database client (plannings/03 C4). Must never be imported from
- * client components — Phase D adds the `server-only` import guard when this
- * gets wired into route handlers. Connection string comes exclusively from
- * DATABASE_URL (.env, gitignored).
+ * SERVER-ONLY database client (plannings/03 C4). The `server-only` import
+ * makes any accidental client-component import a build error (Phase H fix
+ * SR-1; vitest aliases the package to a stub). Connection string comes
+ * exclusively from DATABASE_URL (.env, gitignored).
  */
 
 let pool: Pool | undefined;
