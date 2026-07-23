@@ -8,7 +8,7 @@ We need, in browsers (and later Node for the CLI): Argon2id, X25519 key wrapping
 
 ## Decision
 
-- **libsodium-wrappers (wasm)** for: Argon2id (`crypto_pwhash`), key splitting (`crypto_kdf`), X25519 sealed boxes (`crypto_box_seal`), streaming file encryption (`crypto_secretstream` XChaCha20-Poly1305).
+- **libsodium-wrappers-sumo (wasm)** for: Argon2id (`crypto_pwhash`), key splitting (`crypto_kdf`), X25519 sealed boxes (`crypto_box_seal`), streaming file encryption (`crypto_secretstream` XChaCha20-Poly1305). *(Phase B note: the sumo build is required — the standard `libsodium-wrappers` build omits `crypto_pwhash`.)*
 - **WebCrypto native `AES-GCM`** for record encryption (snapshots, diffs, names, private-key encryption) — exactly the handoff-recommended AEAD, hardware-backed, zero bundle cost.
 - Both wrapped exclusively inside `src/lib/crypto/`; versioned envelopes ([crypto-spec.md](../crypto-spec.md) §2) make either primitive replaceable later.
 

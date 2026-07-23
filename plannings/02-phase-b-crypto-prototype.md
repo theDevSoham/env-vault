@@ -1,5 +1,7 @@
 # 02 — Phase B: Crypto Prototype
 
+**Status: DONE (2026-07-23)** — see [worklog/phase-b-crypto-prototype__worklog_2026-07-23.md](../worklog/phase-b-crypto-prototype__worklog_2026-07-23.md)
+
 **Goal:** implement and test the entire cryptographic layer in isolation — no database, no UI, no network (handoff §35 Phase B). Output is the reviewed crypto module that all later phases consume unchanged.
 
 **Dependencies:** Phase A (crypto spec must exist). **Blocks:** C, E.
@@ -7,33 +9,33 @@
 ## Steps
 
 ### B1. Module skeleton
-- [ ] Create `src/lib/crypto/` per `docs/crypto-spec.md`; install the chosen library (ADR from O1).
-- [ ] Implement the versioned envelope encode/decode with strict validation.
-- [ ] Set up a test runner (e.g. Vitest) — this phase is driven entirely by tests.
+- [x] Created `src/lib/crypto/` per `docs/crypto-spec.md`; installed `libsodium-wrappers-sumo` (sumo required — standard build lacks `crypto_pwhash`; ADR-001 amended).
+- [x] Versioned envelope encode/decode with strict validation (`envelope.ts`; unknown v/t/alg → hard error).
+- [x] Test runner: Vitest (`vitest.config.ts`, `npm test`).
 
 ### B2. Primitive wrappers (each with unit tests)
-- [ ] CSPRNG helpers (key generation, nonce generation — collision-safe strategy from spec).
-- [ ] Argon2id PDK derivation (params from spec; params round-trip through storage format).
-- [ ] AEAD encrypt/decrypt (tamper detection test: flipped byte must fail).
-- [ ] X25519 keypair generation + envelope wrap/unwrap.
+- [x] CSPRNG helpers (`sodium.ts`): randomBytes; nonces generated module-internally only.
+- [x] Argon2id PDK derivation (`kdf.ts`): params round-trip via stored record; policy v1 exercised in tests; weak-params helper for test speed.
+- [x] AEAD encrypt/decrypt (`record.ts`, WebCrypto AES-256-GCM): tamper tests for ct, nonce, AAD, wrong key; anti-transplant AAD check.
+- [x] X25519 keypair + sealed-box wrap/unwrap (`keys.ts`).
 
-## B3. Protocol flows as pure functions (each with tests)
-- [ ] User key generation: keypair + private key encrypted under PDK; wrong password fails cleanly.
-- [ ] Vault key generation + wrapping for owner.
-- [ ] Environment snapshot encrypt/decrypt (secret names + values inside ciphertext).
-- [ ] Vault sharing: wrap vault key for a second keypair; second identity can decrypt snapshot.
-- [ ] Revocation: rotate vault key, re-encrypt snapshot, re-wrap for remaining members; **test that the removed member's old key cannot decrypt post-rotation state, and that remaining members can still read pre-rotation revisions** (key-generation tracking).
-- [ ] Revision restoration: reconstruct environment state from an older snapshot.
-- [ ] Client-side structural diff: given two decrypted snapshots, compute added/removed/renamed/modified; encrypt the diff metadata.
+### B3. Protocol flows as pure functions (each with tests)
+- [x] User key generation + private-key encryption under KEK; wrong password fails cleanly; per-user AAD prevents cross-user replay.
+- [x] Vault key generation + wrapping for owner.
+- [x] Environment snapshot encrypt/decrypt (`snapshot.ts`; names + values inside ciphertext; stable key ids).
+- [x] Vault sharing flow: second identity decrypts via its own wrapped envelope (flows.test.ts).
+- [x] Revocation flow: rotation to gen 2; removed member's retained gen-1 key cannot decrypt post-rotation state; remaining members read pre- and post-rotation history (key-generation tracking).
+- [x] Revision restoration: old snapshot re-encrypted at current generation as a new revision.
+- [x] Client-side structural diff by stable id (add/remove/rename/modify incl. rename+modify); diff metadata encrypted with revision binding.
 
 ### B4. Negative & property tests
-- [ ] Nonce uniqueness across a large batch of operations.
-- [ ] Envelope version mismatch handled explicitly (no silent fallback).
-- [ ] No plaintext appears in any serialized output (scan test on fixtures).
+- [x] Nonce uniqueness across 2000 operations; identical inputs → distinct ciphertexts.
+- [x] Envelope version/alg mismatch → explicit `UnsupportedEnvelopeError` (no silent fallback).
+- [x] No-plaintext scan on serialized envelopes (marker strings, raw key bytes in base64/hex).
 
 ## Exit criteria
 
-- [ ] All flows in handoff §35 Phase B pass automated tests.
-- [ ] Crypto module has no imports from app/db/network code (isolation enforced).
-- [ ] Public API of `src/lib/crypto/` documented (JSDoc or `docs/crypto-spec.md` appendix).
-- [ ] Worklog entry written.
+- [x] All flows in handoff §35 Phase B pass automated tests (53 tests, 7 files, all green).
+- [x] Crypto module has no imports from app/db/network code — enforced by an automated isolation test (only `./siblings` + `libsodium-wrappers-sumo` allowed; also asserts zero `console.` calls).
+- [x] Public API documented via JSDoc throughout + crypto-spec §9; spec amended with Phase B implementation notes (sumo build, privkey AAD).
+- [x] Worklog entry written.

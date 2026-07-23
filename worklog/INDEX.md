@@ -15,4 +15,5 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
+- [Phase B — Crypto Prototype](phase-b-crypto-prototype__worklog_2026-07-23.md) — 2026-07-23 — `src/lib/crypto/` implemented per crypto-spec; 53 tests green incl. sharing/revocation/restore flows, tamper & isolation checks.
 - [Phase A — Security Design](phase-a-security-design__worklog_2026-07-23.md) — 2026-07-23 — all seven design docs + ADR-001…005 written; O1/O2/O5/O6/O7 resolved, O3/O4 deferred to Phase C.

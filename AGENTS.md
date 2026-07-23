@@ -33,7 +33,7 @@ Env Vault is a **zero-knowledge** encrypted storage and sharing platform for `.e
 | [memories/](memories/INDEX.md) | Agent context preservation across sessions — indexed in `memories/INDEX.md` |
 | `app/` | Next.js 16 App Router routes (currently create-next-app scaffold) |
 | `app/layout.tsx`, `app/page.tsx` | Root layout & landing page (scaffold, to be replaced) |
-| `src/lib/crypto/` | *(planned)* The single reviewed crypto module — sole owner of primitives |
+| `src/lib/crypto/` | The single reviewed crypto module — sole owner of primitives (built Phase B; spec: `docs/crypto-spec.md`; tests in `__tests__/`, run `npm test`) |
 | `src/lib/db/` | *(planned)* DB schema + server-only data access |
 | `src/lib/storage/` | *(planned)* Object-storage adapter (encrypted blobs only) |
 | `src/lib/api/` | *(planned)* Typed client for backend endpoints |

@@ -20,6 +20,8 @@ Per [ADR-001](decisions/adr-001-crypto-library.md), a hybrid of two audited impl
 
 No other primitive may be used. No code outside `src/lib/crypto/` may import libsodium or call `crypto.subtle`.
 
+> Implementation note (Phase B): the package is `libsodium-wrappers-sumo` — the standard `libsodium-wrappers` build omits `crypto_pwhash` (Argon2id). Same audited library, fuller build.
+
 ## 2. Versioned envelope formats (handoff §34.15)
 
 Every ciphertext at rest is one of these JSON envelopes. Unknown `v` or `alg` → hard error, never silent fallback.
@@ -135,6 +137,8 @@ Contains key **names only — never values**. Encrypted as `enc.rec` under the v
 ## 7. Encrypted names (ADR-004)
 
 Vault names, environment names, and secret filenames are encrypted as `enc.rec` under the vault key with AADs `"vname:<vault-id>"`, `"ename:<vault-id>:<env-id>"`, `"fname:<vault-id>:<file-id>"`. List endpoints return envelopes; clients decrypt for display after unwrapping the vault key.
+
+The user's encrypted private key is likewise AAD-bound: `"privkey:<user-id>"` (added in Phase B, consistent with the binding philosophy — an `encPrivKey` blob cannot be replayed under a different user record).
 
 ## 8. File encryption (handoff §22)
 
