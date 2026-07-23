@@ -25,8 +25,15 @@ The button is **disabled until the form is actually valid** again (user asked fo
 - Production build: nonce match confirmed; browser E2E login works with zero CSP violations and no creds-in-URL.
 - tsc/lint clean; `next build` all routes now `ƒ` (dynamic).
 
+## Follow-up: prod API still 500s (DB or libsodium)
+
+After the CSP fix, deployed `/api/auth/*` still 500 (kdf, login, signup) — a DB-or-crypto failure. Every failing endpoint does `getUserByEmail` (DB) then libsodium; couldn't isolate remotely because the error text wasn't logged. Two changes to address it:
+
+1. **`serverExternalPackages: ["libsodium-wrappers-sumo"]`** in `next.config.ts` — the likely fix if the cause is wasm init breaking when bundled into the serverless function (a known Vercel/Next failure). Verified locally in prod mode: login→401, kdf→200 (DB + crypto both fine with libsodium external).
+2. **`withRoute` now logs the error name+message on 5xx** (`… -> 500 — Error: <cause>`) — still no bodies/payloads, but 5xx are now diagnosable in Vercel logs.
+
 ## Still required for the DEPLOYED app to work
 
-Both are prerequisites on Vercel:
-1. **Redeploy** with this `force-dynamic` fix (otherwise scripts stay blocked).
-2. **Set `DATABASE_URL` + `SERVER_SECRET`** in Vercel env vars (the API still 500s without them; Neon DB itself is healthy).
+1. **Redeploy** with `force-dynamic` (CSP/hydration) + `serverExternalPackages` (libsodium) + the logging change.
+2. **Set `DATABASE_URL` + `SERVER_SECRET`** in Vercel env vars if not already (Neon DB itself is healthy; verified 8 users).
+3. If it still 500s after redeploy, the Vercel function log now shows the exact cause (`… -> 500 — <error>`) — paste it and I'll fix the specific issue (DB SSL/connection vs crypto).

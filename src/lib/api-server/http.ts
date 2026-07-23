@@ -87,9 +87,13 @@ export function withRoute<C = unknown>(handler: Handler<C>): Handler<C> {
     } catch (error) {
       const response = toResponse(error);
       if (response.status >= 500) {
-        // method + path + status only — never bodies or error details with payloads
+        // Log method/path/status + the error's name+message so 5xx are
+        // diagnosable (e.g. missing DATABASE_URL, DB/SSL failure, libsodium
+        // init). Still NO request bodies, headers, or payloads — infra error
+        // text carries no user secrets. The client still gets a generic code.
         const path = new URL(request.url).pathname;
-        console.error(`[api] ${request.method} ${path} -> ${response.status}`);
+        const cause = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+        console.error(`[api] ${request.method} ${path} -> ${response.status} — ${cause}`);
       }
       return response;
     }
