@@ -54,6 +54,17 @@ export {
   attachEnvelopeAndActivate,
   revokeInvitation,
 } from "./invitations";
+export {
+  createDeviceGrant,
+  getPendingGrantByCode,
+  approveDeviceGrant,
+  denyDeviceGrant,
+  getGrantForPoll,
+  issueDeviceToken,
+  getUserIdForDeviceToken,
+  listDeviceGrantsForUser,
+  revokeDeviceGrant,
+} from "./devices";
 export type { CreateFileInput } from "./files";
 export {
   createSecretFile,

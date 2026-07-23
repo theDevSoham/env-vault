@@ -13,7 +13,7 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [Sharing & Invitation Protocol](sharing-protocol.md) — invitation states, existing-user flow, deferred-wrap flow, multi-generation entitlement, fingerprints (Draft)
 - [Revocation & Key Rotation Protocol](revocation-protocol.md) — precise guarantee, atomic rotation protocol, failure/concurrency handling, history across generations (Draft)
 - [Revision Encryption & Commit Model](revision-model.md) — snapshot-per-revision, optimistic-concurrency commit, restore, comparison, value concealment (Draft)
-- [CLI Key Provisioning](cli-key-provisioning.md) — device-auth + device-keypair-wrap design sketch; must be finalized before Phase 1.5 (Sketch)
+- [CLI Key Provisioning](cli-key-provisioning.md) — device-authorization protocol, endpoints, storage-at-rest, token/revocation semantics (Final — Phase 1.5)
 
 ## Decision records (`decisions/`)
 
@@ -24,6 +24,7 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [ADR-005](decisions/adr-005-pending-invitations.md) — pending invitations via deferred wrap (Accepted)
 - [ADR-006](decisions/adr-006-database-orm.md) — Neon Postgres + Drizzle ORM, node-postgres driver (Accepted)
 - [ADR-007](decisions/adr-007-object-storage.md) — storage adapter interface; Postgres-backed blob store for V1 (Accepted)
+- [ADR-008](decisions/adr-008-cli-runtime.md) — CLI runtime: Node/tsx in-repo sharing the crypto module; 0600-file credential storage V1 (Accepted)
 
 ## Planned
 

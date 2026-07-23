@@ -63,6 +63,37 @@ export const sessions = pgTable(
   ]
 );
 
+/** CLI device grants (cli-key-provisioning.md §3). The server stores only
+ *  hashes of the poll secret and bearer token, and the user's private key
+ *  only as an enc.box sealed to the device's public key. */
+export const deviceGrants = pgTable(
+  "device_grants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }), // null until approved
+    name: text("name").notNull(), // display only, e.g. user@host
+    devicePubKey: text("device_pub_key").notNull(),
+    userCode: text("user_code").notNull(),
+    pollSecretHash: text("poll_secret_hash").notNull(),
+    tokenHash: text("token_hash"), // null until approved
+    wrappedPrivKeyEnv: jsonb("wrapped_priv_key_env"), // enc.box → device pubkey, null until approved
+    state: text("state").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("device_grants_code_uq").on(t.userCode),
+    index("device_grants_user_idx").on(t.userId),
+    index("device_grants_token_idx").on(t.tokenHash),
+    check(
+      "device_grants_state_ck",
+      sql`${t.state} in ('pending', 'approved', 'denied', 'revoked', 'expired')`
+    ),
+  ]
+);
+
 /** User cryptographic identity (crypto-spec §3). Public key plaintext;
  *  private key only as a KEK-encrypted enc.rec envelope; KDF params plaintext. */
 export const userKeys = pgTable("user_keys", {

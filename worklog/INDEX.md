@@ -15,6 +15,7 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
+- [Phase 1.5 — CLI](phase-1.5-cli__worklog_2026-07-23.md) — 2026-07-23 — device-auth login (fingerprint-verified), vaults/envs/pull/run; verified end-to-end against the live server; suite at 93.
 - [Phase H — Security Review](phase-h-security-review__worklog_2026-07-23.md) — 2026-07-23 — H1–H8 complete; SR-1…SR-7 fixed, 4 accepted risks; all 19 MVP criteria pass — **V1 complete**.
 - [Phase G — Export](phase-g-export__worklog_2026-07-23.md) — 2026-07-23 — client-side .env/JSON export + audit event; blob content and zero-plaintext network trace verified in browser; MVP #14–#16 done.
 - [Phase F — Version Control](phase-f-version-control__worklog_2026-07-23.md) — 2026-07-23 — compare/restore/conflict-rebase; 4 real-crypto API integration tests; browser-verified; suite at 88.

@@ -310,6 +310,27 @@ export async function decryptRevisionDiff(
   });
 }
 
+// ————— CLI device approval (Phase 1.5, cli-key-provisioning §2 step 4–5) —————
+
+export async function lookupPendingDevice(
+  code: string
+): Promise<{ deviceId: string; name: string; devicePubKey: string; fingerprint: string }> {
+  const device = await api.pendingDevice(code);
+  return { ...device, fingerprint: await publicKeyFingerprint(device.devicePubKey) };
+}
+
+/** Wrap the in-memory user private key to the device's public key and approve.
+ *  The sealed box is payload-agnostic — same primitive as vault-key wrapping. */
+export async function approveDevice(deviceId: string, devicePubKey: string): Promise<void> {
+  const { privateKey } = requireKeys();
+  const wrappedPrivKeyEnv = await wrapVaultKey(privateKey, await b64.from(devicePubKey));
+  await api.approveDevice(deviceId, { wrappedPrivKeyEnv });
+}
+
+export async function deviceFingerprint(publicKey: string): Promise<string> {
+  return publicKeyFingerprint(publicKey);
+}
+
 // ————— export (Phase G, handoff §8) —————
 
 /**

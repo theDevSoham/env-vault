@@ -50,6 +50,9 @@ function VaultsInner() {
         <h1 className="text-2xl font-bold">Your vaults</h1>
         <div className="flex items-center gap-3 text-sm text-neutral-400">
           <span>{session.email}</span>
+          <Link href="/devices" className="rounded border border-neutral-700 px-3 py-1">
+            CLI devices
+          </Link>
           <button
             onClick={async () => {
               await logout();

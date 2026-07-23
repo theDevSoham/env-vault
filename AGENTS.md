@@ -42,6 +42,7 @@ Env Vault is a **zero-knowledge** encrypted storage and sharing platform for `.e
 | `src/lib/client/` | Client crypto orchestration: keystore (in-memory keys), flows, .env format (built Phase E) |
 | `src/components/` | UI components — no crypto logic inside components; they call `src/lib/client/flows` |
 | `proxy.ts` | Next 16 proxy (ex-middleware): nonce CSP + security headers (threat-model T8) |
+| `cli/` | `envvault` CLI (`npm run cli -- <cmd>`): device-auth login, pull, run (built Phase 1.5; design: `docs/cli-key-provisioning.md`, ADR-008) |
 | `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs` | Tooling config (Next 16.2.11, React 19, Tailwind 4, TS 5) |
 
 ## Working conventions

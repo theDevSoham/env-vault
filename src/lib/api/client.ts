@@ -183,6 +183,21 @@ export const api = {
     if (!response.ok) throw new ApiClientError(response.status, "chunk_fetch_failed");
     return new Uint8Array(await response.arrayBuffer());
   },
+  // devices (CLI grants)
+  pendingDevice: (code: string) =>
+    call<{ deviceId: string; name: string; devicePubKey: string }>(
+      "GET",
+      `/api/devices/pending?code=${encodeURIComponent(code)}`
+    ),
+  approveDevice: (deviceId: string, body: unknown) =>
+    call<{ ok: true }>("POST", `/api/devices/${deviceId}/approve`, body),
+  denyDevice: (deviceId: string) => call<{ ok: true }>("POST", `/api/devices/${deviceId}/deny`),
+  listDevices: () =>
+    call<{ devices: { id: string; name: string; createdAt: string; lastUsedAt: string | null; devicePubKey: string }[] }>(
+      "GET",
+      "/api/devices"
+    ),
+  revokeDevice: (deviceId: string) => call<{ ok: true }>("POST", `/api/devices/${deviceId}/revoke`),
   // audit
   audit: (vaultId: string) => call<{ events: AuditEventDto[] }>("GET", `/api/vaults/${vaultId}/audit`),
   auditExport: (vaultId: string, body: unknown) =>

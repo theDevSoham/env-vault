@@ -42,6 +42,15 @@ function readCookieToken(request: Request): string | null {
 }
 
 export async function getSessionUserId(request: Request): Promise<string | null> {
+  // CLI device tokens arrive as a Bearer header (cli-key-provisioning §2 step 7)
+  // — a separate, individually revocable credential path from web cookies.
+  const authorization = request.headers.get("authorization");
+  if (authorization?.startsWith("Bearer ")) {
+    const bearer = authorization.slice(7).trim();
+    if (!bearer) return null;
+    const { getUserIdForDeviceToken } = await import("../db/devices");
+    return getUserIdForDeviceToken(getDb(), await hashSessionToken(bearer));
+  }
   const token = readCookieToken(request);
   if (!token) return null;
   const tokenHash = await hashSessionToken(token);

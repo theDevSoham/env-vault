@@ -27,7 +27,9 @@ export type AuditType =
   | "secret_file_uploaded"
   | "secret_file_replaced"
   | "secret_file_deleted"
-  | "vault_key_rotated";
+  | "vault_key_rotated"
+  | "device_approved"
+  | "device_revoked";
 
 export async function appendAudit(
   executor: DbExecutor,
