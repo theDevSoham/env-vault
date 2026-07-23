@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { RevisionConflict } from "../lib/api/client";
 import { newKeyId, type Snapshot, type SnapshotKey } from "../lib/crypto";
 import { parseDotenv } from "../lib/client/envformat";
-import { commitSnapshot, loadHeadSnapshot } from "../lib/client/flows";
+import { commitSnapshot, decryptRevisionDiff, loadSnapshot } from "../lib/client/flows";
+import { api } from "../lib/api/client";
 
 /**
  * The core secrets screen (plannings/05 E4, handoff §7).
@@ -41,22 +42,42 @@ export function SecretsEditor({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const importRef = useRef<HTMLInputElement>(null);
+  /** Ops carried across a conflict reload, re-applied onto the new base (handoff §30). */
+  const pendingRebase = useRef<StagedKey[] | null>(null);
 
   const load = useCallback(
     async (revision: number) => {
-      const snapshot = await loadHeadSnapshot(vaultId, envId, revision);
+      const snapshot = await loadSnapshot(vaultId, envId, revision);
       setBaseSnapshot(snapshot);
-      setStaged(
-        snapshot.keys
-          .map((key) => ({
-            ...key,
-            value: key.value,
-            status: "unchanged" as const,
-            pendingValue: "",
-            originalName: key.name,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name))
-      );
+      let fresh: StagedKey[] = snapshot.keys
+        .map((key) => ({
+          ...key,
+          value: key.value,
+          status: "unchanged" as const as StagedKey["status"],
+          pendingValue: "",
+          originalName: key.name,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      const rebase = pendingRebase.current;
+      if (rebase) {
+        pendingRebase.current = null;
+        for (const op of rebase) {
+          if (op.status === "added") {
+            if (!fresh.some((k) => k.name === op.name)) {
+              fresh = [...fresh, { ...op, id: "" }];
+            }
+            continue;
+          }
+          const index = fresh.findIndex((k) => k.id === op.id || k.name === op.originalName);
+          if (index === -1) continue; // upstream deleted it — nothing to re-apply
+          fresh = fresh.map((k, i) =>
+            i === index
+              ? { ...k, name: op.name, pendingValue: op.pendingValue, status: op.status }
+              : k
+          );
+        }
+      }
+      setStaged(fresh);
     },
     [vaultId, envId]
   );
@@ -112,8 +133,13 @@ export function SecretsEditor({
       onCommitted(number);
     } catch (error) {
       if (error instanceof RevisionConflict) {
+        // Preserve the user's staged ops and re-apply them onto the new head.
+        pendingRebase.current = staged.filter((key) => key.status !== "unchanged");
+        const upstream = await describeUpstream(head, error.currentHead);
         setNotice(
-          `Conflict: someone committed revision ${error.currentHead} first. Reloaded latest — please re-apply your changes.`
+          `Conflict: someone else committed first (now at revision ${error.currentHead}).` +
+            (upstream ? ` Their changes: ${upstream}.` : "") +
+            " Your staged changes were re-applied on top — review and commit again."
         );
         setHead(error.currentHead);
       } else {
@@ -121,6 +147,29 @@ export function SecretsEditor({
       }
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** Human summary of revisions between oldHead+1..newHead (names only). */
+  async function describeUpstream(oldHead: number, newHead: number): Promise<string> {
+    try {
+      const { revisions } = await api.listRevisions(vaultId, envId);
+      const missed = revisions.filter((r) => r.number > oldHead && r.number <= newHead);
+      const parts: string[] = [];
+      for (const meta of missed) {
+        const diff = await decryptRevisionDiff(vaultId, envId, meta);
+        parts.push(
+          [
+            ...diff.added.map((n) => `+${n}`),
+            ...diff.modified.map((n) => `~${n}`),
+            ...diff.renamed.map((r) => `${r.from}→${r.to}`),
+            ...diff.removed.map((n) => `−${n}`),
+          ].join(" ")
+        );
+      }
+      return parts.filter(Boolean).join("; ");
+    } catch {
+      return "";
     }
   }
 

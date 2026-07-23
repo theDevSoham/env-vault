@@ -211,14 +211,15 @@ export async function createEnvironment(vaultId: string, name: string): Promise<
 
 // ————— snapshots & commits (E4) —————
 
-export async function loadHeadSnapshot(
+/** Load and decrypt any revision's snapshot (0 = the empty pre-history state). */
+export async function loadSnapshot(
   vaultId: string,
   envId: string,
-  headRevision: number
+  revisionNumber: number
 ): Promise<Snapshot> {
-  if (headRevision === 0) return emptySnapshot();
+  if (revisionNumber === 0) return emptySnapshot();
   const detail = await api.vaultDetail(vaultId);
-  const { revision } = await api.getRevision(vaultId, envId, headRevision);
+  const { revision } = await api.getRevision(vaultId, envId, revisionNumber);
   const vaultKey = await unwrapForGeneration(detail, revision.keyGeneration);
   return decryptSnapshot(revision.snapshotEnv, vaultKey, {
     vaultId,
@@ -226,6 +227,44 @@ export async function loadHeadSnapshot(
     revision: revision.number,
     generation: revision.keyGeneration,
   });
+}
+
+/** Structural comparison of two arbitrary revisions (revision-model §4).
+ *  Both snapshots decrypt locally; the diff never touches the server. */
+export async function compareRevisions(
+  vaultId: string,
+  envId: string,
+  from: number,
+  to: number
+): Promise<StructuralDiff> {
+  const [before, after] = await Promise.all([
+    loadSnapshot(vaultId, envId, from),
+    loadSnapshot(vaultId, envId, to),
+  ]);
+  return diffSnapshots(before, after);
+}
+
+/** Restore revision `target` as a NEW revision on top of `currentHead`
+ *  (revision-model §3): history is never rewritten, and the restored state is
+ *  re-encrypted under the CURRENT vault key generation. */
+export async function restoreRevision(
+  vaultId: string,
+  envId: string,
+  target: number,
+  currentHead: number
+): Promise<number> {
+  const [targetSnapshot, headSnapshot] = await Promise.all([
+    loadSnapshot(vaultId, envId, target),
+    loadSnapshot(vaultId, envId, currentHead),
+  ]);
+  return commitSnapshot(
+    vaultId,
+    envId,
+    { revision: currentHead, snapshot: headSnapshot },
+    targetSnapshot,
+    `Restored state from Revision ${target}`,
+    target
+  );
 }
 
 /** Encrypt + commit `after` as revision base+1. Throws RevisionConflict on stale base. */
