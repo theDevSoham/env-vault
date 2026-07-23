@@ -56,11 +56,15 @@ export const changePasswordSchema = z.object({
 });
 
 export const createVaultSchema = z.object({
+  vaultId: z.string().uuid(), // client-generated: AAD binds the encrypted name to it
   nameEnv: recEnvelope,
   ownerEnvelope: boxEnvelope,
 });
 
-export const createEnvironmentSchema = z.object({ nameEnv: recEnvelope });
+export const createEnvironmentSchema = z.object({
+  environmentId: z.string().uuid(),
+  nameEnv: recEnvelope,
+});
 
 export const commitRevisionSchema = z.object({
   baseRevision: z.number().int().min(0),
@@ -81,6 +85,7 @@ export const activateInvitationSchema = z.object({ envelope: boxEnvelope });
 
 const chunkB64 = z.string().max(8_000_000); // ~6 MB decoded per chunk
 export const createFileSchema = z.object({
+  fileId: z.string().uuid(),
   nameEnv: recEnvelope,
   streamEnv: streamEnvelope,
   keyGeneration: z.number().int().positive(),

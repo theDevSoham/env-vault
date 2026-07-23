@@ -57,6 +57,8 @@ export {
   keyedHash32,
 } from "./authhash";
 
+export { publicKeyFingerprint } from "./fingerprint";
+
 export type { Snapshot, SnapshotKey, StructuralDiff, SnapshotLocation } from "./snapshot";
 export {
   newKeyId,

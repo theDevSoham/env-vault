@@ -27,8 +27,11 @@ export function aadFileName(vaultId: string, fileId: string): string {
   return `fname:${vaultId}:${fileId}`;
 }
 
-export function aadPrivateKey(userId: string): string {
-  return `privkey:${userId}`;
+/** identifier = the user's lowercased email (V1): the userId does not exist yet
+ *  at signup time, when the private key is first encrypted client-side. An
+ *  email-change feature would require re-encrypting the private key. */
+export function aadPrivateKey(identifier: string): string {
+  return `privkey:${identifier}`;
 }
 
 /** kid for vault-key-encrypted records: "<vault-id>:<generation>" (crypto-spec §2.1). */

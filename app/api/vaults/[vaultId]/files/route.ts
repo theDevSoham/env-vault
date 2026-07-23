@@ -22,6 +22,7 @@ export const POST = withRoute<Ctx>(async (request, { params }) => {
   await requireVaultOwner(vaultId, userId);
   const body = await readJson(request, createFileSchema, LARGE_BODY_LIMIT);
   const file = await createSecretFile(getDb(), {
+    id: body.fileId,
     vaultId,
     actorUserId: userId,
     nameEnv: body.nameEnv,

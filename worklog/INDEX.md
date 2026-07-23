@@ -15,6 +15,7 @@ Examples: `crypto-module__worklog_2026-08-01.md`, `vault-creation-api__worklog_2
 
 ## Worklogs (newest first)
 
+- [Phase E — Web Client](phase-e-web-client__worklog_2026-07-23.md) — 2026-07-23 — client crypto flows, in-memory keystore, full UI, CSP via proxy.ts; MVP journey verified in a real browser; suite at 84.
 - [Phase D — Backend APIs](phase-d-backend-apis__worklog_2026-07-23.md) — 2026-07-23 — auth + sessions, central vault guard, 25 ciphertext-only routes, 12 authorization-matrix tests; suite at 81 green.
 - [Phase C — Data Model](phase-c-data-model__worklog_2026-07-23.md) — 2026-07-23 — Drizzle schema (11 tables) on Neon Postgres, append-only triggers, atomic rotation tx, blob-store adapter; 16 integration tests green.
 - [Phase B — Crypto Prototype](phase-b-crypto-prototype__worklog_2026-07-23.md) — 2026-07-23 — `src/lib/crypto/` implemented per crypto-spec; 53 tests green incl. sharing/revocation/restore flows, tamper & isolation checks.

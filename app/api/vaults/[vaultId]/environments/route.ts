@@ -12,6 +12,7 @@ export const POST = withRoute<Ctx>(async (request, { params }) => {
   await requireVaultOwner(vaultId, userId); // owner manages environments (handoff §6)
   const body = await readJson(request, createEnvironmentSchema);
   const environment = await createEnvironment(getDb(), {
+    id: body.environmentId,
     vaultId,
     nameEnv: body.nameEnv,
     actorUserId: userId,

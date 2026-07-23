@@ -12,6 +12,8 @@ import { secretFiles } from "./schema";
  */
 
 export interface CreateFileInput {
+  /** Client-generated UUID (encrypted filename AAD binds to it — crypto-spec §7). */
+  id: string;
   vaultId: string;
   actorUserId: string;
   nameEnv: unknown; // enc.rec — encrypted filename
@@ -26,6 +28,7 @@ export async function createSecretFile(db: Db, input: CreateFileInput): Promise<
     const [file] = await tx
       .insert(secretFiles)
       .values({
+        id: input.id,
         vaultId: input.vaultId,
         nameEnv: input.nameEnv,
         streamEnv: input.streamEnv,

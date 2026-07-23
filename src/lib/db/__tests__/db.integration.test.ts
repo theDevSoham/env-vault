@@ -87,7 +87,7 @@ describe("users", () => {
 
 describe("vaults + memberships", () => {
   it("creates vault with owner membership + gen-1 envelope, atomically", async () => {
-    vaultId = (await createVault(db, { ownerUserId: ownerId, nameEnv: fakeRec("vname"), ownerEnvelope: fakeBox("vk-owner-g1") })).id;
+    vaultId = (await createVault(db, { id: crypto.randomUUID(), ownerUserId: ownerId, nameEnv: fakeRec("vname"), ownerEnvelope: fakeBox("vk-owner-g1") })).id;
     const vault = await getVault(db, vaultId);
     expect(vault.keyGeneration).toBe(1);
     const membership = await getMembership(db, vaultId, ownerId);
@@ -102,7 +102,7 @@ describe("vaults + memberships", () => {
 
 describe("revisions (optimistic concurrency)", () => {
   it("commits sequentially and rejects stale bases with the current head", async () => {
-    envId = (await createEnvironment(db, { vaultId, nameEnv: fakeRec("ename"), actorUserId: ownerId })).id;
+    envId = (await createEnvironment(db, { id: crypto.randomUUID(), vaultId, nameEnv: fakeRec("ename"), actorUserId: ownerId })).id;
 
     const r1 = await commitRevision(db, { vaultId, environmentId: envId, baseRevision: 0, actorUserId: ownerId, keyGeneration: 1, snapshotEnv: fakeRec("snap1"), diffEnv: fakeRec("diff1"), message: "Initial" });
     expect(r1.number).toBe(1);
@@ -252,7 +252,7 @@ describe("secret files (Postgres blob store)", () => {
   it("stores, replaces and deletes encrypted chunks losslessly", async () => {
     const chunkA = new Uint8Array([1, 2, 3, 255, 0, 128]);
     const chunkB = new Uint8Array(300).fill(7);
-    const file = await createSecretFile(db, { vaultId, actorUserId: ownerId, nameEnv: fakeRec("fname"), streamEnv: fakeStream("f1"), keyGeneration: 2, chunks: [chunkA, chunkB] });
+    const file = await createSecretFile(db, { id: crypto.randomUUID(), vaultId, actorUserId: ownerId, nameEnv: fakeRec("fname"), streamEnv: fakeStream("f1"), keyGeneration: 2, chunks: [chunkA, chunkB] });
 
     const store = new PostgresBlobStore(db);
     expect(await store.chunkCount(file.id)).toBe(2);

@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { appendAudit } from "./audit";
 import type { Db, DbExecutor } from "./client";
 import { NotFoundError } from "./errors";
-import { environments, vaultKeyEnvelopes, vaultMemberships, vaults } from "./schema";
+import { environments, userKeys, users, vaultKeyEnvelopes, vaultMemberships, vaults } from "./schema";
 
 /**
  * Vaults, memberships, and wrapped vault-key envelopes (handoff §16–17).
@@ -10,6 +10,9 @@ import { environments, vaultKeyEnvelopes, vaultMemberships, vaults } from "./sch
  */
 
 export interface CreateVaultInput {
+  /** Client-generated UUID — must exist before creation because the encrypted
+   *  name's AAD binds to it (crypto-spec §7). */
+  id: string;
   ownerUserId: string;
   nameEnv: unknown; // enc.rec (encrypted vault name, ADR-004)
   ownerEnvelope: unknown; // enc.box (vault key wrapped for owner)
@@ -19,7 +22,7 @@ export async function createVault(db: Db, input: CreateVaultInput): Promise<{ id
   return db.transaction(async (tx) => {
     const [vault] = await tx
       .insert(vaults)
-      .values({ nameEnv: input.nameEnv })
+      .values({ id: input.id, nameEnv: input.nameEnv })
       .returning({ id: vaults.id });
     await tx.insert(vaultMemberships).values({
       vaultId: vault.id,
@@ -77,10 +80,20 @@ export async function listVaultsForUser(executor: DbExecutor, userId: string) {
     .where(and(eq(vaultMemberships.userId, userId), eq(vaultMemberships.status, "active")));
 }
 
+/** Active members with email + public key (client needs keys for re-wrapping
+ *  during rotation, and fingerprints for display — threat-model T9). */
 export async function listActiveMembers(executor: DbExecutor, vaultId: string) {
   return executor
-    .select()
+    .select({
+      userId: vaultMemberships.userId,
+      role: vaultMemberships.role,
+      createdAt: vaultMemberships.createdAt,
+      email: users.email,
+      publicKey: userKeys.publicKey,
+    })
     .from(vaultMemberships)
+    .innerJoin(users, eq(vaultMemberships.userId, users.id))
+    .innerJoin(userKeys, eq(vaultMemberships.userId, userKeys.userId))
     .where(and(eq(vaultMemberships.vaultId, vaultId), eq(vaultMemberships.status, "active")));
 }
 

@@ -134,11 +134,11 @@ describe("auth lifecycle", () => {
 
 describe("authorization matrix", () => {
   it("owner creates vault + environment; commits a revision", async () => {
-    const vault = await vaultsPOST(req("POST", "/api/vaults", { cookie: ownerCookie, body: { nameEnv: fakeRec("vname"), ownerEnvelope: fakeBox("vk-owner") } }), undefined);
+    const vault = await vaultsPOST(req("POST", "/api/vaults", { cookie: ownerCookie, body: { vaultId: crypto.randomUUID(), nameEnv: fakeRec("vname"), ownerEnvelope: fakeBox("vk-owner") } }), undefined);
     expect(vault.status).toBe(201);
     vaultId = ((await vault.json()) as { vaultId: string }).vaultId;
 
-    const environment = await envPOST(req("POST", `/api/vaults/${vaultId}/environments`, { cookie: ownerCookie, body: { nameEnv: fakeRec("ename") } }), ctx({ vaultId }));
+    const environment = await envPOST(req("POST", `/api/vaults/${vaultId}/environments`, { cookie: ownerCookie, body: { environmentId: crypto.randomUUID(), nameEnv: fakeRec("ename") } }), ctx({ vaultId }));
     expect(environment.status).toBe(201);
     envId = ((await environment.json()) as { environmentId: string }).environmentId;
 
@@ -242,7 +242,7 @@ describe("authorization matrix", () => {
 
   it("invalid envelopes are rejected 422 before touching the db", async () => {
     const response = await vaultsPOST(
-      req("POST", "/api/vaults", { cookie: ownerCookie, body: { nameEnv: { v: 9, t: "enc.rec" }, ownerEnvelope: fakeBox("x") } }),
+      req("POST", "/api/vaults", { cookie: ownerCookie, body: { vaultId: crypto.randomUUID(), nameEnv: { v: 9, t: "enc.rec" }, ownerEnvelope: fakeBox("x") } }),
       undefined
     );
     expect(response.status).toBe(422);

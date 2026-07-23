@@ -6,12 +6,12 @@ import { environments } from "./schema";
 
 export async function createEnvironment(
   db: Db,
-  input: { vaultId: string; nameEnv: unknown; actorUserId: string }
+  input: { id: string; vaultId: string; nameEnv: unknown; actorUserId: string }
 ): Promise<{ id: string }> {
   return db.transaction(async (tx) => {
     const [env] = await tx
       .insert(environments)
-      .values({ vaultId: input.vaultId, nameEnv: input.nameEnv })
+      .values({ id: input.id, vaultId: input.vaultId, nameEnv: input.nameEnv })
       .returning({ id: environments.id });
     await appendAudit(tx, {
       vaultId: input.vaultId,

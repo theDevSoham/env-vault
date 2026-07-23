@@ -15,6 +15,7 @@ export const POST = withRoute(async (request) => {
   const { userId } = await requireSession(request);
   const body = await readJson(request, createVaultSchema);
   const vault = await createVault(getDb(), {
+    id: body.vaultId,
     ownerUserId: userId,
     nameEnv: body.nameEnv,
     ownerEnvelope: body.ownerEnvelope,
