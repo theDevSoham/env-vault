@@ -9,7 +9,7 @@ Statuses: `not-started` · `in-progress` · `blocked` · `done`
 | 00 | [Roadmap & MVP success criteria](00-roadmap.md) | — | in-progress |
 | 01 | [Phase A — Architecture & security design](01-phase-a-architecture.md) | — | done |
 | 02 | [Phase B — Crypto prototype](02-phase-b-crypto-prototype.md) | 01 | done |
-| 03 | [Phase C — Data model](03-phase-c-data-model.md) | 01, 02 | not-started |
+| 03 | [Phase C — Data model](03-phase-c-data-model.md) | 01, 02 | done |
 | 04 | [Phase D — Backend APIs](04-phase-d-backend.md) | 03 | not-started |
 | 05 | [Phase E — Web client](05-phase-e-web-client.md) | 02, 04 | not-started |
 | 06 | [Phase F — Version control](06-phase-f-version-control.md) | 05 | not-started |

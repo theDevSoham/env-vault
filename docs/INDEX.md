@@ -21,11 +21,12 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [ADR-003](decisions/adr-003-argon2id-params.md) — Argon2id parameters policy v1: 64 MiB / ops 3 (Accepted)
 - [ADR-004](decisions/adr-004-metadata-sensitivity.md) — vault/environment/file names encrypted (Accepted)
 - [ADR-005](decisions/adr-005-pending-invitations.md) — pending invitations via deferred wrap (Accepted)
+- [ADR-006](decisions/adr-006-database-orm.md) — Neon Postgres + Drizzle ORM, node-postgres driver (Accepted)
+- [ADR-007](decisions/adr-007-object-storage.md) — storage adapter interface; Postgres-backed blob store for V1 (Accepted)
 
 ## Planned
 
 - `security-review-v1.md` — Phase H findings log (planned)
-- ADRs for O3 (database + ORM) and O4 (object storage) — deferred to Phase C (see [plannings/03-phase-c-data-model.md](../plannings/03-phase-c-data-model.md))
 
 ## Conventions
 

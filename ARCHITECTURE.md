@@ -192,12 +192,11 @@ Order is mandated by handoff §35. Concrete task breakdowns live in [plannings/]
 | D10 | Vault/environment/file names encrypted under vault key (was O6) | User content reveals infrastructure; ids/timestamps/roles stay plaintext | [ADR-004](docs/decisions/adr-004-metadata-sensitivity.md) |
 | D11 | Pending invites via deferred wrap by owner's client (was O7) | No escrow, no key-in-link; access waits for owner's next unlocked session | [ADR-005](docs/decisions/adr-005-pending-invitations.md) |
 | D12 | CLI provisioning approach: device-auth + device-keypair wrap (was O8) | Sketch fixed now so Phases A–E don't preclude it; full design gated pre-1.5 | [docs/cli-key-provisioning.md](docs/cli-key-provisioning.md) |
+| D13 | Postgres (Neon dev) + Drizzle ORM, node-postgres driver (was O3) | SQL-level control for append-only triggers + atomic rotation tx; light runtime | [ADR-006](docs/decisions/adr-006-database-orm.md) |
+| D14 | Storage adapter interface; Postgres-backed blob store for V1 (was O4) | Zero extra infra at V1 scale; S3-compatible adapter is a drop-in later | [ADR-007](docs/decisions/adr-007-object-storage.md) |
 
 ## 10. Open Decisions (do not pick silently)
 
-| # | Question | Status / notes |
-|---|---|---|
-| O3 | Database + ORM | Deferred to Phase C (C1). Hard requirement: transactional multi-row commits for atomic key rotation. |
-| O4 | Object storage provider | Deferred to Phase C (C1). S3-compatible; receives encrypted bytes only. |
+*None currently open.* All of O1–O8 are resolved (see §9). New security-sensitive questions must be added here before being decided.
 
 Phase A design documents live in [docs/](docs/INDEX.md): threat model, crypto spec, account/key lifecycle, sharing protocol, revocation protocol, revision model, CLI provisioning sketch.

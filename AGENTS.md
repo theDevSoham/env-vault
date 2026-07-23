@@ -34,8 +34,9 @@ Env Vault is a **zero-knowledge** encrypted storage and sharing platform for `.e
 | `app/` | Next.js 16 App Router routes (currently create-next-app scaffold) |
 | `app/layout.tsx`, `app/page.tsx` | Root layout & landing page (scaffold, to be replaced) |
 | `src/lib/crypto/` | The single reviewed crypto module — sole owner of primitives (built Phase B; spec: `docs/crypto-spec.md`; tests in `__tests__/`, run `npm test`) |
-| `src/lib/db/` | *(planned)* DB schema + server-only data access |
-| `src/lib/storage/` | *(planned)* Object-storage adapter (encrypted blobs only) |
+| `src/lib/db/` | DB schema + server-only data access (built Phase C; Drizzle + Neon Postgres, ADR-006; integration tests need `DATABASE_URL` in `.env`) |
+| `src/lib/storage/` | Object-storage adapter — encrypted blobs only (built Phase C; V1 = Postgres blob store, ADR-007) |
+| `drizzle/` | SQL migrations (`drizzle-kit generate` / `migrate`); 0001 = append-only triggers |
 | `src/lib/api/` | *(planned)* Typed client for backend endpoints |
 | `src/components/` | *(planned)* UI components — no crypto logic inside components |
 | `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs` | Tooling config (Next 16.2.11, React 19, Tailwind 4, TS 5) |
