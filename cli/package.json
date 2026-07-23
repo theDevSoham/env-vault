@@ -4,6 +4,16 @@
   "description": "Zero-knowledge secrets CLI for Env Vault — pull .env secrets and inject them into processes, with client-side decryption.",
   "keywords": ["env", "secrets", "dotenv", "encryption", "zero-knowledge", "cli"],
   "license": "MIT",
+  "author": "Soham Das <publicsoham.24@gmail.com>",
+  "homepage": "https://github.com/theDevSoham/env-vault/tree/main/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theDevSoham/env-vault.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/theDevSoham/env-vault/issues"
+  },
   "type": "commonjs",
   "bin": {
     "envvault": "dist/envvault.js"
@@ -11,7 +21,7 @@
   "scripts": {
     "prepack": "npm --prefix .. run build:cli"
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "LICENSE"],
   "engines": {
     "node": ">=20"
   },

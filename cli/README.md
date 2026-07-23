@@ -1,6 +1,6 @@
 # envvault
 
-Zero-knowledge secrets CLI for [Env Vault](https://github.com/). Pull `.env` secrets and inject them into processes — all decryption happens locally; the server only ever serves ciphertext.
+Zero-knowledge secrets CLI for [Env Vault](https://github.com/theDevSoham/env-vault). Pull `.env` secrets and inject them into processes — all decryption happens locally; the server only ever serves ciphertext.
 
 ## Install
 

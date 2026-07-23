@@ -21,8 +21,19 @@ Made the CLI an **npm-publishable package** without publishing it, and — impor
 - Root still `private: true`; lint clean; 98 tests green.
 - **Not published** — publishing stays a manual `cd cli && npm publish`.
 
-## Notes / follow-ups
+## Metadata & LICENSE (done — follow-up completed same day)
 
-- Once published, the Devices-page copy ("Run `envvault login`") is literally correct via `npm i -g envvault`. Until then it's forward-correct but a user without the package can't run it; an optional "don't have it? `npm i -g envvault`" hint on the page was offered but not added (user scoped this to publish-prep only).
+- Confirmed the npm name **`envvault` is available** (registry 404).
+- Filled `cli/package.json`: `author` (Soham Das <publicsoham.24@gmail.com>), `repository` (git+https://github.com/theDevSoham/env-vault.git, `directory: "cli"`), `homepage`, `bugs` — all pulled from the real git remote/config, not invented.
+- Added `cli/LICENSE` (MIT, © 2026 Soham Das) and wired `LICENSE` into `files`. Fixed the placeholder repo link in `cli/README.md`.
+- `npm pack --dry-run` now ships a 4-file tarball: LICENSE, README.md, dist/envvault.js, package.json. Metadata validates.
+
+## Remaining before an actual publish (not blockers I can fix in-repo)
+
+- **No hosted backend** — the CLI defaults to `http://localhost:3000`; Env Vault isn't deployed publicly, so an installed CLI has nothing real to point at. Publish only once a server exists (and give `--server` a real default or require it). **This is the gating item.**
+- Publishing is a manual, outward-facing `cd cli && npm publish` (needs the owner's npm auth) — intentionally not done here.
+- Optional: add a "don't have it? `npm i -g envvault`" hint to the Devices page (offered, not done — scoped to publish-prep).
+
+## Notes
+
 - Device-login smoke tests were killed before browser approval, so they left only short-lived `pending` grants (10-min expiry) — no cleanup needed.
-- Set the real repo/homepage URLs in `cli/package.json` before an actual publish; pick the npm name (`envvault` may be taken — verify availability).
