@@ -15,6 +15,13 @@
       "when": 1784788996215,
       "tag": "0001_append-only-guards",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784790146165,
+      "tag": "0002_sessions",
+      "breakpoints": true
     }
   ]
 }

@@ -48,6 +48,8 @@ export {
   createInvitation,
   getInvitation,
   listAwaitingWrap,
+  listInvitationsForEmail,
+  listInvitationsForVault,
   acceptInvitation,
   attachEnvelopeAndActivate,
   revokeInvitation,

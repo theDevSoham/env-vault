@@ -43,6 +43,26 @@ export const users = pgTable(
   (t) => [uniqueIndex("users_email_lower_uq").on(sql`lower(${t.email})`)]
 );
 
+/** Login sessions (ADR-002, Phase D). Stores only a keyed hash of the random
+ *  session token — a DB dump cannot forge cookies. Tokens grant API access
+ *  only; they can never decrypt anything (handoff §23). */
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("sessions_token_hash_uq").on(t.tokenHash),
+    index("sessions_user_idx").on(t.userId),
+  ]
+);
+
 /** User cryptographic identity (crypto-spec §3). Public key plaintext;
  *  private key only as a KEK-encrypted enc.rec envelope; KDF params plaintext. */
 export const userKeys = pgTable("user_keys", {

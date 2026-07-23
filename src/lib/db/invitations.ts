@@ -60,6 +60,21 @@ export async function getInvitation(executor: DbExecutor, invitationId: string) 
   return rows[0];
 }
 
+/** Pending invitations addressed to an email (invitee's inbox view). */
+export async function listInvitationsForEmail(executor: DbExecutor, email: string) {
+  return executor
+    .select()
+    .from(invitations)
+    .where(
+      and(sql`lower(${invitations.inviteeEmail}) = lower(${email})`, eq(invitations.state, "pending"))
+    );
+}
+
+/** All invitations for a vault (owner management view). */
+export async function listInvitationsForVault(executor: DbExecutor, vaultId: string) {
+  return executor.select().from(invitations).where(eq(invitations.vaultId, vaultId));
+}
+
 /** Invitations awaiting the owner's wrap (Flow B, state=accepted, no envelope). */
 export async function listAwaitingWrap(executor: DbExecutor, vaultId: string) {
   return executor

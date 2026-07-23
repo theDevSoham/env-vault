@@ -31,8 +31,9 @@ Env Vault is a **zero-knowledge** encrypted storage and sharing platform for `.e
 | [plannings/](plannings/INDEX.md) | Concrete step-by-step plans per phase — indexed in `plannings/INDEX.md` |
 | [worklog/](worklog/INDEX.md) | Completed work logs, `<feature/issue>__worklog_<YYYY-MM-DD>.md` — indexed in `worklog/INDEX.md` |
 | [memories/](memories/INDEX.md) | Agent context preservation across sessions — indexed in `memories/INDEX.md` |
-| `app/` | Next.js 16 App Router routes (currently create-next-app scaffold) |
+| `app/api/` | Backend route handlers — ciphertext only, guarded by `src/lib/api-server` (built Phase D) |
 | `app/layout.tsx`, `app/page.tsx` | Root layout & landing page (scaffold, to be replaced) |
+| `src/lib/api-server/` | Server framework: sessions, vault guard, validation, rate limits (built Phase D) |
 | `src/lib/crypto/` | The single reviewed crypto module — sole owner of primitives (built Phase B; spec: `docs/crypto-spec.md`; tests in `__tests__/`, run `npm test`) |
 | `src/lib/db/` | DB schema + server-only data access (built Phase C; Drizzle + Neon Postgres, ADR-006; integration tests need `DATABASE_URL` in `.env`) |
 | `src/lib/storage/` | Object-storage adapter — encrypted blobs only (built Phase C; V1 = Postgres blob store, ADR-007) |
@@ -43,6 +44,7 @@ Env Vault is a **zero-knowledge** encrypted storage and sharing platform for `.e
 
 ## Working conventions
 
+- **This file stays under 150 lines** (token budget — it loads every session). Keep entries to one line; details belong in ARCHITECTURE.md, `docs/`, `plannings/`, `worklog/` — link, don't inline.
 - **Docs:** every document added to `docs/` gets a one-line entry in `docs/INDEX.md`.
 - **Plans:** phase plans live in `plannings/`, numbered in execution order; update checkboxes as steps complete and keep `plannings/INDEX.md` statuses current.
 - **Worklogs:** after completing a feature/issue, write `worklog/<feature-or-issue>__worklog_<YYYY-MM-DD>.md` (what was done, decisions made, files touched, follow-ups) and index it in `worklog/INDEX.md`.

@@ -49,6 +49,14 @@ export {
 
 export { encryptRecord, decryptRecord } from "./record";
 
+export {
+  hashAuthKey,
+  verifyAuthKey,
+  generateSessionToken,
+  hashSessionToken,
+  keyedHash32,
+} from "./authhash";
+
 export type { Snapshot, SnapshotKey, StructuralDiff, SnapshotLocation } from "./snapshot";
 export {
   newKeyId,
