@@ -23,9 +23,36 @@ export interface CliSession {
 }
 
 export async function openSession(): Promise<CliSession> {
+  // Non-interactive mode (CI, machine-identities §1): ENVVAULT_CREDENTIALS
+  // holds the base64 machine-credential blob — no login flow, no local file.
+  const machineCredential = process.env.ENVVAULT_CREDENTIALS;
+  if (machineCredential) {
+    let parsed: { v: number; serverUrl: string; token: string; publicKey: string; privateKey: string };
+    try {
+      parsed = JSON.parse(Buffer.from(machineCredential, "base64").toString("utf8"));
+      if (parsed.v !== 1) throw new Error("bad version");
+    } catch {
+      throw new Error("ENVVAULT_CREDENTIALS is not a valid machine credential");
+    }
+    return {
+      credentials: {
+        v: 1,
+        serverUrl: parsed.serverUrl,
+        deviceId: "service-account",
+        devicePrivKey: parsed.privateKey,
+        devicePubKey: parsed.publicKey,
+        wrappedPrivKeyEnv: null,
+        token: parsed.token,
+      },
+      privateKey: await fromB64(parsed.privateKey),
+      publicKey: await fromB64(parsed.publicKey),
+    };
+  }
   const credentials = loadCredentials();
   if (!credentials) {
-    throw new Error("Not logged in. Run: envvault login [--server URL]");
+    throw new Error(
+      "Not logged in. Run: envvault login [--server URL] (or set ENVVAULT_CREDENTIALS for CI)"
+    );
   }
   const publicKey = await fromB64(credentials.devicePubKey);
   const privateKeyDevice = await fromB64(credentials.devicePrivKey);

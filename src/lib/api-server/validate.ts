@@ -79,6 +79,21 @@ export const createInvitationSchema = z.object({
   inviteeEmail: emailSchema,
   role: z.enum(["owner", "member"]),
   envelope: boxEnvelope.optional(),
+  /** Temporary access: membership lifetime in days from activation (1–365). */
+  membershipTtlDays: z.number().int().min(1).max(365).optional(),
+});
+
+export const membershipExpirySchema = z.object({
+  /** ISO timestamp, or null to clear (permanent membership). */
+  expiresAt: z.string().datetime().nullable(),
+});
+
+export const createServiceAccountSchema = z.object({
+  name: z.string().min(1).max(120),
+  publicKey: b64,
+  envelope: boxEnvelope,
+  keyGeneration: z.number().int().positive(),
+  membershipTtlDays: z.number().int().min(1).max(365).optional(),
 });
 
 export const activateInvitationSchema = z.object({ envelope: boxEnvelope });

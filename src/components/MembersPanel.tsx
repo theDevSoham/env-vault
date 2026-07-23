@@ -46,9 +46,37 @@ export function MembersPanel({ vaultId, isOwner }: { vaultId: string; isOwner: b
             <span>
               {member.email}
               <span className="ml-2 font-mono text-xs text-neutral-500">{member.fingerprint}</span>
-              <span className="ml-2 text-xs uppercase text-neutral-500">{member.role}</span>
+              <span className="ml-2 text-xs uppercase text-neutral-500">
+                {member.isService ? "service" : member.role}
+              </span>
+              {member.expiresAt && (
+                <span className="ml-2 text-xs text-amber-400">
+                  expires {new Date(member.expiresAt).toLocaleDateString()}
+                </span>
+              )}
             </span>
             {isOwner && member.userId !== session.userId && (
+              <span className="flex gap-2">
+              <button
+                disabled={busy}
+                onClick={async () => {
+                  const days = prompt(
+                    "Temporary access: expire this membership after how many days? (empty = permanent)\nNote: expiry blocks API access only — removing the member rotates keys.",
+                    member.expiresAt ? "" : "30"
+                  );
+                  if (days === null) return;
+                  const expiresAt =
+                    days.trim() === ""
+                      ? null
+                      : new Date(Date.now() + Number(days) * 86_400_000).toISOString();
+                  if (days.trim() !== "" && (!Number.isFinite(Number(days)) || Number(days) < 1)) return;
+                  await api.setMemberExpiry(vaultId, member.userId, { expiresAt });
+                  await reload();
+                }}
+                className="rounded border border-neutral-700 px-2 py-0.5 text-xs"
+              >
+                Expiry
+              </button>
               <button
                 disabled={busy}
                 onClick={async () => {
@@ -69,6 +97,7 @@ export function MembersPanel({ vaultId, isOwner }: { vaultId: string; isOwner: b
               >
                 Remove
               </button>
+              </span>
             )}
           </li>
         ))}

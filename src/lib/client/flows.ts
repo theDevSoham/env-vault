@@ -331,6 +331,44 @@ export async function deviceFingerprint(publicKey: string): Promise<string> {
   return publicKeyFingerprint(publicKey);
 }
 
+// ————— service accounts (Phase 2, machine-identities §1) —————
+
+/**
+ * Create a machine identity: keypair generated HERE, vault key wrapped HERE;
+ * the server receives only the public key + envelope and returns the bearer
+ * token once. Returns the one-time machine credential (base64 JSON blob) —
+ * shown once, never recoverable (the private key never touches the server).
+ */
+export async function createServiceAccount(
+  vaultId: string,
+  name: string,
+  membershipTtlDays?: number
+): Promise<{ credential: string; fingerprint: string }> {
+  const detail = await api.vaultDetail(vaultId);
+  const generation = detail.vault.keyGeneration;
+  const vaultKey = await unwrapForGeneration(detail, generation);
+  const keypair = await generateUserKeypair();
+  const publicKey = await b64.to(keypair.publicKey);
+  const envelope = await wrapVaultKey(vaultKey, keypair.publicKey);
+  const { token } = await api.createServiceAccount(vaultId, {
+    name,
+    publicKey,
+    envelope,
+    keyGeneration: generation,
+    membershipTtlDays,
+  });
+  const credential = btoa(
+    JSON.stringify({
+      v: 1,
+      serverUrl: window.location.origin,
+      token,
+      publicKey,
+      privateKey: await b64.to(keypair.privateKey),
+    })
+  );
+  return { credential, fingerprint: await publicKeyFingerprint(publicKey) };
+}
+
 // ————— export (Phase G, handoff §8) —————
 
 /**

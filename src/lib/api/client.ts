@@ -99,6 +99,17 @@ export interface MemberDto {
   role: string;
   email: string;
   publicKey: string;
+  isService: boolean;
+  expiresAt: string | null;
+}
+export interface ServiceAccountDto {
+  userId: string;
+  name: string;
+  publicKey: string;
+  membershipExpiresAt: string | null;
+  tokenExpiresAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
 }
 export interface InvitationDto {
   id: string;
@@ -183,6 +194,19 @@ export const api = {
     if (!response.ok) throw new ApiClientError(response.status, "chunk_fetch_failed");
     return new Uint8Array(await response.arrayBuffer());
   },
+  // service accounts + temporary access (Phase 2)
+  listServiceAccounts: (vaultId: string) =>
+    call<{ serviceAccounts: ServiceAccountDto[] }>("GET", `/api/vaults/${vaultId}/service-accounts`),
+  createServiceAccount: (vaultId: string, body: unknown) =>
+    call<{ serviceAccountId: string; token: string }>(
+      "POST",
+      `/api/vaults/${vaultId}/service-accounts`,
+      body
+    ),
+  revokeServiceAccount: (vaultId: string, saUserId: string) =>
+    call<{ ok: true }>("POST", `/api/vaults/${vaultId}/service-accounts/${saUserId}/revoke`),
+  setMemberExpiry: (vaultId: string, memberUserId: string, body: unknown) =>
+    call<{ ok: true }>("POST", `/api/vaults/${vaultId}/members/${memberUserId}/expiry`, body),
   // devices (CLI grants)
   pendingDevice: (code: string) =>
     call<{ deviceId: string; name: string; devicePubKey: string }>(

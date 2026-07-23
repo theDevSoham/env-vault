@@ -14,6 +14,8 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [Revocation & Key Rotation Protocol](revocation-protocol.md) — precise guarantee, atomic rotation protocol, failure/concurrency handling, history across generations (Draft)
 - [Revision Encryption & Commit Model](revision-model.md) — snapshot-per-revision, optimistic-concurrency commit, restore, comparison, value concealment (Draft)
 - [CLI Key Provisioning](cli-key-provisioning.md) — device-authorization protocol, endpoints, storage-at-rest, token/revocation semantics (Final — Phase 1.5)
+- [Machine Identities & Temporary Access](machine-identities.md) — service-account protocol, expiring memberships, explicit decisions (Final — Phase 2)
+- [CI / GitHub Actions Usage](ci-github-actions.md) — non-interactive CLI mode, workflow example, secret-handling guidance (Final — Phase 2)
 
 ## Decision records (`decisions/`)
 
@@ -25,6 +27,7 @@ Format: `- [Title](file.md) — one-line description (status)`
 - [ADR-006](decisions/adr-006-database-orm.md) — Neon Postgres + Drizzle ORM, node-postgres driver (Accepted)
 - [ADR-007](decisions/adr-007-object-storage.md) — storage adapter interface; Postgres-backed blob store for V1 (Accepted)
 - [ADR-008](decisions/adr-008-cli-runtime.md) — CLI runtime: Node/tsx in-repo sharing the crypto module; 0600-file credential storage V1 (Accepted)
+- [ADR-009](decisions/adr-009-service-accounts.md) — service accounts as flagged users on the device-grant machinery (Accepted)
 
 ## Planned
 

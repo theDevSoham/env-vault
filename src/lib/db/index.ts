@@ -32,6 +32,7 @@ export {
   createVault,
   getVault,
   getMembership,
+  setMembershipExpiry,
   listVaultsForUser,
   listActiveMembers,
   listKeyEnvelopesForMember,
@@ -39,6 +40,12 @@ export {
   listEnvironments,
   deleteVault,
 } from "./vaults";
+export type { CreateServiceAccountInput } from "./serviceaccounts";
+export {
+  createServiceAccount,
+  listServiceAccounts,
+  revokeServiceAccount,
+} from "./serviceaccounts";
 export { createEnvironment, getEnvironment, deleteEnvironment } from "./environments";
 export type { CommitRevisionInput } from "./revisions";
 export { commitRevision, listRevisions, getRevision } from "./revisions";

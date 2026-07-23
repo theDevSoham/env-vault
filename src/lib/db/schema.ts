@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   bigserial,
+  boolean,
   check,
   customType,
   index,
@@ -38,6 +39,9 @@ export const users = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     email: text("email").notNull(),
     authVerifier: text("auth_verifier").notNull(),
+    /** Service accounts (ADR-009): non-human identity; synthetic email, unusable
+     *  verifier, private key held only by the credential owner (e.g. CI). */
+    isService: boolean("is_service").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("users_email_lower_uq").on(sql`lower(${t.email})`)]
@@ -125,6 +129,10 @@ export const vaultMemberships = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     role: text("role").notNull(), // 'owner' | 'member' (handoff §6)
     status: text("status").notNull().default("active"), // 'active' | 'removed'
+    /** Temporary access (machine-identities.md §2): past-expiry ⇒ treated as
+     *  non-member by the guard. Authorization-level only — rotation remains
+     *  the cryptographic revocation. */
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -254,6 +262,8 @@ export const invitations = pgTable(
     }),
     envelope: jsonb("envelope"), // enc.box for invitee, nullable until wrapped
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    /** Optional temporary-access TTL applied to the membership at activation. */
+    membershipExpiresAt: timestamp("membership_expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

@@ -28,6 +28,9 @@ export const POST = withRoute<Ctx>(async (request, { params }) => {
     role: body.role,
     invitedByUserId: userId,
     envelope: body.envelope,
+    membershipExpiresAt: body.membershipTtlDays
+      ? new Date(Date.now() + body.membershipTtlDays * 86_400_000)
+      : null,
   });
   return json({ invitationId: invitation.id }, 201);
 });

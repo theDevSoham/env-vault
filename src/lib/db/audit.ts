@@ -29,7 +29,10 @@ export type AuditType =
   | "secret_file_deleted"
   | "vault_key_rotated"
   | "device_approved"
-  | "device_revoked";
+  | "device_revoked"
+  | "membership_expiry_set"
+  | "service_account_created"
+  | "service_account_revoked";
 
 export async function appendAudit(
   executor: DbExecutor,

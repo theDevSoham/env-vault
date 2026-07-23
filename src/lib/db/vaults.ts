@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { appendAudit } from "./audit";
 import type { Db, DbExecutor } from "./client";
 import { NotFoundError } from "./errors";
@@ -51,7 +51,9 @@ export async function getVault(executor: DbExecutor, vaultId: string) {
   return rows[0];
 }
 
-/** Active membership for a user in a vault — the central authorization lookup. */
+/** Active membership for a user in a vault — the central authorization lookup.
+ *  Expired memberships (temporary access, machine-identities §2) are treated
+ *  exactly like non-membership: lazy enforcement, no cron. */
 export async function getMembership(executor: DbExecutor, vaultId: string, userId: string) {
   const rows = await executor
     .select()
@@ -60,11 +62,42 @@ export async function getMembership(executor: DbExecutor, vaultId: string, userI
       and(
         eq(vaultMemberships.vaultId, vaultId),
         eq(vaultMemberships.userId, userId),
-        eq(vaultMemberships.status, "active")
+        eq(vaultMemberships.status, "active"),
+        sql`(${vaultMemberships.expiresAt} is null or ${vaultMemberships.expiresAt} > now())`
       )
     )
     .limit(1);
   return rows[0] ?? null;
+}
+
+/** Owner action: set or clear a member's expiry (temporary access). */
+export async function setMembershipExpiry(
+  db: Db,
+  input: { vaultId: string; memberUserId: string; expiresAt: Date | null; actorUserId: string }
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    const updated = await tx
+      .update(vaultMemberships)
+      .set({ expiresAt: input.expiresAt })
+      .where(
+        and(
+          eq(vaultMemberships.vaultId, input.vaultId),
+          eq(vaultMemberships.userId, input.memberUserId),
+          eq(vaultMemberships.status, "active")
+        )
+      )
+      .returning({ id: vaultMemberships.id });
+    if (updated.length === 0) throw new NotFoundError("membership not found");
+    await appendAudit(tx, {
+      vaultId: input.vaultId,
+      actorUserId: input.actorUserId,
+      type: "membership_expiry_set",
+      context: {
+        memberUserId: input.memberUserId,
+        expiresAt: input.expiresAt ? input.expiresAt.toISOString() : null,
+      },
+    });
+  });
 }
 
 export async function listVaultsForUser(executor: DbExecutor, userId: string) {
@@ -88,7 +121,9 @@ export async function listActiveMembers(executor: DbExecutor, vaultId: string) {
       userId: vaultMemberships.userId,
       role: vaultMemberships.role,
       createdAt: vaultMemberships.createdAt,
+      expiresAt: vaultMemberships.expiresAt,
       email: users.email,
+      isService: users.isService,
       publicKey: userKeys.publicKey,
     })
     .from(vaultMemberships)

@@ -7,6 +7,7 @@ import { api } from "@/src/lib/api/client";
 import { createEnvironment, loadVault, type DecryptedVault } from "@/src/lib/client/flows";
 import { FilesPanel } from "@/src/components/FilesPanel";
 import { MembersPanel } from "@/src/components/MembersPanel";
+import { ServiceAccountsPanel } from "@/src/components/ServiceAccountsPanel";
 import { UnlockGate } from "@/src/components/UnlockGate";
 
 function VaultInner({ vaultId }: { vaultId: string }) {
@@ -103,6 +104,7 @@ function VaultInner({ vaultId }: { vaultId: string }) {
 
       <div className="flex flex-col gap-6">
         <MembersPanel vaultId={vaultId} isOwner={isOwner} />
+        {isOwner && <ServiceAccountsPanel vaultId={vaultId} />}
         <FilesPanel vaultId={vaultId} isOwner={isOwner} />
       </div>
     </main>

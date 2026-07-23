@@ -25,6 +25,8 @@ export async function createInvitation(
     /** Flow A: wrapped envelope available immediately. Flow B: omitted. */
     envelope?: unknown;
     ttlDays?: number;
+    /** Temporary access: membership expiry applied at activation (machine-identities §2). */
+    membershipExpiresAt?: Date | null;
   }
 ): Promise<{ id: string }> {
   return db.transaction(async (tx) => {
@@ -38,6 +40,7 @@ export async function createInvitation(
         invitedByUserId: input.invitedByUserId,
         envelope: input.envelope ?? null,
         expiresAt,
+        membershipExpiresAt: input.membershipExpiresAt ?? null,
       })
       .returning({ id: invitations.id });
     await appendAudit(tx, {
@@ -115,7 +118,7 @@ export async function acceptInvitation(
       context: { invitationId: inv.id },
     });
     if (inv.envelope !== null) {
-      await activateWithin(tx, inv.id, inv.vaultId, inviteeUserId, inv.role, inv.envelope);
+      await activateWithin(tx, inv.id, inv.vaultId, inviteeUserId, inv.role, inv.envelope, inv.membershipExpiresAt);
       return { state: "active" as const };
     }
     await tx.update(invitations).set({ state: "accepted" }).where(eq(invitations.id, inv.id));
@@ -143,7 +146,7 @@ export async function attachEnvelopeAndActivate(
       .update(invitations)
       .set({ envelope: input.envelope })
       .where(eq(invitations.id, inv.id));
-    await activateWithin(tx, inv.id, inv.vaultId, input.inviteeUserId, inv.role, input.envelope);
+    await activateWithin(tx, inv.id, inv.vaultId, input.inviteeUserId, inv.role, input.envelope, inv.membershipExpiresAt);
     await appendAudit(tx, {
       vaultId: inv.vaultId,
       actorUserId: input.actorUserId,
@@ -186,7 +189,8 @@ async function activateWithin(
   vaultId: string,
   userId: string,
   role: string,
-  envelope: unknown
+  envelope: unknown,
+  membershipExpiresAt: Date | null = null
 ): Promise<void> {
   // The wrap targets the current generation; read it inside the transaction.
   const [vault] = await tx
@@ -195,7 +199,9 @@ async function activateWithin(
     .where(eq(vaults.id, vaultId))
     .for("update");
   if (!vault) throw new NotFoundError("vault not found");
-  await tx.insert(vaultMemberships).values({ vaultId, userId, role, status: "active" });
+  await tx
+    .insert(vaultMemberships)
+    .values({ vaultId, userId, role, status: "active", expiresAt: membershipExpiresAt });
   await tx.insert(vaultKeyEnvelopes).values({
     vaultId,
     userId,

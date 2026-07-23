@@ -29,6 +29,13 @@
       "when": 1784809746148,
       "tag": "0003_device-grants",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784810916205,
+      "tag": "0004_phase2-machine-access",
+      "breakpoints": true
     }
   ]
 }
